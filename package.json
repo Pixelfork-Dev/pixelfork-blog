@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run db:setup && next build",
+    "build": "npm run db:setup && npm run content:sync && next build",
     "start": "next start",
     "lint": "eslint",
     "db:local": "pglite-server --db=.data/pglite --port=54329 --max-connections=30",
@@ -12,7 +12,8 @@
     "db:setup": "tsx scripts/db-setup.mts",
     "db:studio": "drizzle-kit studio",
     "post:publish": "tsx --conditions=react-server scripts/publish-post.mts",
-    "post:preview": "tsx scripts/preview-graphics.mts"
+    "post:preview": "tsx scripts/preview-graphics.mts",
+    "content:sync": "tsx --conditions=react-server scripts/publish-post.mts --sync"
   },
   "dependencies": {
     "@tiptap/extension-image": "^3.31.3",

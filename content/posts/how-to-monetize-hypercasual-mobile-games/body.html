@@ -1,0 +1,102 @@
+<p>If you want to <strong>monetize hypercasual mobile games</strong>, ads will almost certainly be your main source of revenue. Hypercasual players open a game for a few minutes, play a handful of levels and leave — very few of them ever buy anything. The good news: with the right ad formats, smart placement and a small store, a simple game can earn well without driving players away. This guide walks through exactly how to do it.</p>
+
+<h2>Why ads dominate hypercasual games</h2>
+<p>Hypercasual games are built for instant fun: one mechanic, one-tap controls and levels that last seconds. That design brings huge install numbers, but short sessions and low spending intent. So instead of charging players, most studios let <strong>advertisers</strong> pay for players’ attention — and use a small number of in-app purchases on top.</p>
+<img src="{{file:images/monetization-models.webp}}" alt="Comparison of ads, in-app purchases and hybrid monetization for hypercasual games" width="1600" height="900" /><p><em>Ads, in-app purchases and hybrid monetization compared.</em></p>
+<ul>
+<li><p><strong>Ads</strong> earn from every player, including the ones who never pay.</p></li>
+<li><p><strong>In-app purchases (IAP)</strong> work for a small group of engaged players — usually a “remove ads” purchase, skins or extra lives.</p></li>
+<li><p><strong>Hybrid</strong> monetization combines both and fits games with progression, collections or daily goals.</p></li>
+</ul>
+<p>For a first hypercasual release, start ad-first and add a single remove-ads purchase. You can grow into hybrid later. For a broader overview of the models, read <a href="/posts/monetization-strategies-for-indie-mobile-games">monetization strategies for indie mobile games</a>.</p>
+
+<h2>Choose the right ad formats</h2>
+<p>Not all ads are equal. The format you choose changes both how much you earn per view and how players feel about your game.</p>
+<img src="{{file:images/ad-formats.webp}}" alt="Rewarded, interstitial and banner ad formats compared by player choice, user experience and relative revenue" width="1600" height="900" /><p><em>Rewarded, interstitial and banner ads at a glance.</em></p>
+<h3>Rewarded ads: your best friend</h3>
+<p>Rewarded ads are opt-in: the player chooses to watch an ad in exchange for something they want, like double coins, an extra life or a skin. Because players choose them, rewarded ads usually earn the most per view and feel the least intrusive. Make the reward genuinely valuable and offer it at moments when players want it most.</p>
+<h3>Interstitial ads: use with care</h3>
+<p>Interstitials are full-screen ads shown between levels. They are the classic hypercasual revenue driver, but showing them too often is the fastest way to hurt retention. Cap the frequency and never show one right after a player loses twice in a row.</p>
+<h3>Banner ads: small and steady</h3>
+<p>Banners stay on screen during gameplay. They earn the least per view, and they take up space on small phone screens. Many hypercasual games skip banners entirely, or show them only on menus.</p>
+
+<h2>Where to place ads without hurting retention</h2>
+<p>Placement matters as much as the format. The golden rule: <strong>show ads at natural breaks, never in the middle of the action.</strong></p>
+<img src="{{file:images/ad-placement-flow.webp}}" alt="Hypercasual game session flow showing good places for rewarded and interstitial ads and never showing ads mid-level" width="1600" height="900" /><p><em>A healthy ad flow: rewarded offers after a win, interstitials only every few levels.</em></p>
+<ol>
+<li><p><strong>Never interrupt a level.</strong> An ad mid-level breaks the core loop and feels like a punishment.</p></li>
+<li><p><strong>Offer rewarded ads on the reward screen.</strong> “Watch an ad to double your coins” right after a win performs well because the player is already happy.</p></li>
+<li><p><strong>Show interstitials every few levels, not every level.</strong> Start conservatively and test the frequency with real players.</p></li>
+<li><p><strong>Give new players a grace period.</strong> Let people enjoy the first sessions before showing interstitials.</p></li>
+</ol>
+<img src="{{file:images/screenshot-game-rewarded-offer.webp}}" alt="Placeholder: A game screen offering “Watch an ad for 2× coins”" width="1600" height="900" /><p><em>⚠ Attention required: real game screenshot of a rewarded offer on the level-complete screen.</em></p>
+
+<h2>How to set up rewarded ads step by step</h2>
+<p>The exact screens differ by ad network, but the flow is the same everywhere. Here it is with Google AdMob:</p>
+<ol>
+<li><p><strong>Create your app</strong> in the ad network dashboard and link it to your store listing.</p></li>
+<li><p><strong>Add a rewarded ad unit</strong> and give it a clear name, such as <code>rewarded_double_coins</code>.</p></li>
+<li><p><strong>Set the reward</strong> (amount and item) so it matches what your game actually gives.</p></li>
+<li><p><strong>Integrate the SDK</strong> in your engine (Unity, Godot or a web framework) and use test ads while developing.</p></li>
+<li><p><strong>Grant the reward only after the ad completes</strong>, using the SDK’s reward callback — never when the button is tapped.</p></li>
+</ol>
+<img src="{{file:images/screenshot-admob-rewarded-ad-unit.webp}}" alt="Placeholder: Google AdMob: creating a rewarded ad unit" width="1600" height="900" /><p><em>⚠ Attention required: AdMob screen for creating a rewarded ad unit.</em></p>
+<img src="{{file:images/screenshot-rewarded-settings.webp}}" alt="Placeholder: AdMob rewarded ad unit settings (reward: 2 coins)" width="1600" height="900" /><p><em>⚠ Attention required: AdMob rewarded ad unit reward settings.</em></p>
+<p>A typical reward flow in code looks like this:</p>
+<pre><code>// Pseudo-code: grant the reward only after the ad finishes
+function onDoubleCoinsTapped() {
+  if (!rewardedAd.isReady()) return showMessage("No ad available right now");
+  rewardedAd.show({
+    onRewardEarned: () =&gt; addCoins(levelCoins),   // player watched to the end
+    onClosed: () =&gt; goToNextLevel(),
+  });
+}</code></pre>
+
+<h2>Use mediation to earn more from every impression</h2>
+<p>Relying on a single ad network leaves money on the table. <strong>Ad mediation</strong> platforms such as AppLovin MAX, Unity LevelPlay or AdMob mediation connect your game to many networks and let them compete for each ad impression.</p>
+<img src="{{file:images/waterfall-vs-bidding.webp}}" alt="Diagram comparing ad mediation waterfall, where networks are asked one by one, with in-app bidding, where all networks bid at once" width="1600" height="900" /><p><em>Waterfall mediation asks networks in order; in-app bidding runs one real-time auction.</em></p>
+<p>Modern setups use <strong>in-app bidding</strong>, where networks bid at the same time and the highest bid wins, often with a short waterfall as a fallback. Start with a few reliable networks, keep SDKs updated and compare results over a couple of weeks. We cover this in depth in <a href="/posts/ad-mediation-explained">ad mediation explained</a>.</p>
+<img src="{{file:images/screenshot-mediation-networks.webp}}" alt="Placeholder: Mediation networks screen (AppLovin MAX or Unity LevelPlay)" width="1600" height="900" /><p><em>⚠ Attention required: mediation dashboard showing connected bidding networks.</em></p>
+
+<h2>Add a “remove ads” purchase</h2>
+<p>Even in an ad-first game, some players will happily pay to play without interruptions. A one-time, non-consumable <strong>remove ads</strong> purchase is simple to build and often becomes a game’s best-selling item.</p>
+<ul>
+<li><p><strong>Remove interstitials and banners</strong>, but keep optional rewarded ads — players still like free bonuses.</p></li>
+<li><p><strong>Make it restorable</strong> so players keep the purchase on a new phone.</p></li>
+<li><p><strong>Offer it at the right moment</strong>, for example after a few interstitials, not on the first launch.</p></li>
+</ul>
+<img src="{{file:images/screenshot-play-console-remove-ads.webp}}" alt="Placeholder: Google Play Console: creating a “remove_ads” in-app product" width="1600" height="900" /><p><em>⚠ Attention required: Google Play Console screen for creating the remove_ads in-app product.</em></p>
+
+<h2>Track the metrics that matter</h2>
+<p>Monetization is a balance: more ads can raise revenue today and lower it next month if players leave. Always look at revenue and retention together.</p>
+<img src="{{file:images/monetization-metrics.webp}}" alt="Formula cards for eCPM, ARPDAU, LTV and day 1 and day 7 retention" width="1600" height="900" /><p><em>The four numbers every hypercasual developer should watch.</em></p>
+<table>
+<tbody>
+<tr><th><p>Metric</p></th><th><p>What it tells you</p></th></tr>
+<tr><td><p>eCPM</p></td><td><p>How much ad networks pay per 1,000 impressions</p></td></tr>
+<tr><td><p>ARPDAU</p></td><td><p>Average revenue per daily active user</p></td></tr>
+<tr><td><p>D1 / D7 retention</p></td><td><p>Whether players still come back after your ad changes</p></td></tr>
+<tr><td><p>LTV</p></td><td><p>Roughly how much one player is worth, which guides your marketing budget</p></td></tr>
+</tbody>
+</table>
+<img src="{{file:images/screenshot-ad-report-metrics.webp}}" alt="Placeholder: Ad network report with eCPM, impressions and ARPDAU columns" width="1600" height="900" /><p><em>⚠ Attention required: ad network report showing eCPM, impressions and ARPDAU (revenue blurred).</em></p>
+<p>Performance matters too: slow loading and dropped frames increase churn and reduce ad views. See our <a href="/posts/optimize-mobile-game-performance">mobile game performance checklist</a>.</p>
+
+<h2>How to monetize hypercasual mobile games: the checklist</h2>
+<ol>
+<li><p>Start ad-first: rewarded ads plus carefully capped interstitials.</p></li>
+<li><p>Place ads only at natural breaks, never mid-level.</p></li>
+<li><p>Make rewards valuable and grant them only after the ad completes.</p></li>
+<li><p>Use mediation with in-app bidding to raise revenue per impression.</p></li>
+<li><p>Add a restorable “remove ads” purchase.</p></li>
+<li><p>Track eCPM, ARPDAU and retention together, and A/B test every change.</p></li>
+</ol>
+
+<h2>FAQ</h2>
+<h3>What is the best way to monetize a hypercasual game?</h3>
+<p>For most hypercasual games, the best approach is ad-first: rewarded ads for opt-in bonuses, a limited number of interstitials between levels, and a one-time remove-ads purchase.</p>
+<h3>How many interstitial ads should a hypercasual game show?</h3>
+<p>There is no universal number. Start with interstitials every few levels, skip them for brand-new players, and increase frequency only if your retention stays healthy in A/B tests.</p>
+<h3>Do rewarded ads hurt retention?</h3>
+<p>Well-designed rewarded ads rarely hurt retention because players choose to watch them. Problems start when rewards feel necessary to progress, so keep the game fair without them.</p>
+<p>Ready to build your own game and try these ideas? <a href="https://pixelfork.ai">Create your game with Pixelfork</a>.</p>

@@ -23,9 +23,10 @@ First run: open `/blog/admin/register` and create an account with an email liste
 | `npm run db:setup` | Apply migrations; import `seed/` content into an empty database |
 | `npm run db:generate` | Create a migration after editing `src/db/schema.ts` |
 | `npm run db:studio` | Browse the database |
-| `npm run build` | `db:setup` + `next build` (what Vercel runs) |
+| `npm run build` | `db:setup` + `content:sync` + `next build` (what Vercel runs) |
 | `npm run post:publish -- <slug>` | Publish an article package from `content/posts/<slug>` (see `content/posts/types.ts`) |
 | `npm run post:preview -- <slug>` | Render an article package's infographics to PNG for checking |
+| `npm run content:sync` | Import new article packages as **drafts** (runs on every Vercel build; never overwrites existing posts) |
 
 ## Admin & access
 

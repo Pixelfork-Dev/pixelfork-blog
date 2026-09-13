@@ -5,9 +5,14 @@
  *
  *   npm run post:publish -- <slug> [<slug> ...] [--draft] [--replace]
  *   npm run post:publish -- --all [--draft] [--replace]
+ *   npm run content:sync        (runs on every Vercel build)
  *
  * Without --replace an existing post with the same slug is skipped. With --replace it is updated in
  * place (same id, same publish date) and its old images are removed.
+ *
+ * --sync is the deploy mode: every package whose slug isn't in the database yet is imported as a
+ * **draft** (an editor reviews and publishes it in /admin). Existing posts are never touched, and a
+ * failure is logged without failing the deploy.
  */
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -29,6 +34,16 @@ const args = process.argv.slice(2);
 const flags = new Set(args.filter((a) => a.startsWith("--")));
 const root = path.join(process.cwd(), "content", "posts");
 let slugs = args.filter((a) => !a.startsWith("--"));
+const sync = flags.has("--sync");
+if (sync) {
+  flags.add("--all");
+  flags.add("--draft");
+  flags.delete("--replace");
+  if (process.env.VERCEL && !process.env.BLOB_READ_WRITE_TOKEN) {
+    console.log("- content sync skipped: connect a Vercel Blob store so article images can be uploaded");
+    process.exit(0);
+  }
+}
 if (flags.has("--all")) {
   slugs = (await fs.readdir(root, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
   const ready = await Promise.all(slugs.map((s) => fs.access(path.join(root, s, "post.mts")).then(() => true, () => false)));
@@ -60,12 +75,13 @@ async function publish(slug: string, baseTime: Date) {
 
   const existing = await db.query.posts.findFirst({ where: eq(schema.posts.slug, slug) });
   if (existing && !flags.has("--replace")) {
-    console.log(`- ${slug}: already exists, skipped (use --replace to update)`);
+    if (!sync) console.log(`- ${slug}: already exists, skipped (use --replace to update)`);
     return;
   }
+  if (!pkg.body === !pkg.bodyHtml) throw new Error(`${slug}: set exactly one of body or bodyHtml`);
 
   // Validate tokens before uploading anything.
-  const tokens = [...pkg.body.matchAll(/\{\{img:([\w-]+)(?:\|([^}]*))?\}\}/g)];
+  const tokens = [...(pkg.body ?? "").matchAll(/\{\{img:([\w-]+)(?:\|([^}]*))?\}\}/g)];
   const known = new Set([...Object.keys(pkg.graphics ?? {}), ...Object.keys(pkg.screenshots ?? {}), ...Object.keys(pkg.placeholders ?? {})]);
   const unknown = tokens.map((t) => t[1]).filter((k) => !known.has(k));
   if (unknown.length) throw new Error(`${slug}: unknown image keys ${unknown.join(", ")}`);
@@ -93,7 +109,11 @@ async function publish(slug: string, baseTime: Date) {
     }
   }
 
-  let html = await markdownToHtml(pkg.body);
+  let html = pkg.body ? await markdownToHtml(pkg.body) : pkg.bodyHtml!;
+  for (const file of new Set([...html.matchAll(/\{\{file:([^}]+)\}\}/g)].map((m) => m[1]))) {
+    const media = await upload(await fs.readFile(path.join(dir, file)), `${slug}-${path.basename(file)}`, "");
+    html = html.replaceAll(`{{file:${file}}}`, media.url);
+  }
   html = html.replace(/<p>\{\{img:([\w-]+)(?:\|([^}]*))?\}\}<\/p>/g, (_, key: string, caption = "") => {
     const { media, placeholder } = images.get(key)!;
     const credit = pkg.screenshots?.[key]?.credit;
@@ -164,10 +184,12 @@ async function publish(slug: string, baseTime: Date) {
 // Stagger publish times so newly created posts keep a stable order (first slug = newest).
 const now = Date.now();
 for (const [i, slug] of slugs.entries()) {
-  await publish(slug, new Date(now - i * 60_000));
+  try {
+    await publish(slug, new Date(now - i * 60_000));
+  } catch (error) {
+    if (!sync) throw error;
+    console.error(`✗ ${slug}: ${(error as Error).message}`);
+  }
 }
 
-if (process.env.REVALIDATE_URL) {
-  await fetch(process.env.REVALIDATE_URL, { method: "POST" }).catch(() => {});
-}
 process.exit(0);
