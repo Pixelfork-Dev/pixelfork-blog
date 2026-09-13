@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { ctaLink, mainNav } from "@/config/site";
+import { ctaLink, externalLinkProps, mainNav } from "@/config/site";
 import { SocialLinks } from "./SocialLinks";
 import styles from "./MobileMenu.module.css";
 
@@ -42,7 +42,9 @@ export function MobileMenu() {
           <ul className={styles.links}>
             {mainNav.map((item) => (
               <li key={item.label} className="dash-bottom">
-                <a href={item.href}>{item.label}</a>
+                <a href={item.href} {...externalLinkProps(item.href)}>
+                  {item.label}
+                </a>
               </li>
             ))}
           </ul>

@@ -15,7 +15,7 @@ export const siteConfig = {
     "Tutorials, pro tips and insights on game development: Unity, Three.js, 2D and 3D games, mobile game dev, monetization and distribution — from the Pixelfork team.",
   locale: "en_US",
   language: "en",
-  twitterHandle: "@pixelfork",
+  twitterHandle: "@pixelfork_ai",
   themeColor: "#1c1c1c",
   brandColor: "#F26207",
   logo: "/logo.svg",
@@ -25,7 +25,7 @@ export const siteConfig = {
 } as const;
 
 export const mainNav = [
-  { label: "Community", href: `${siteConfig.mainSiteUrl}/community` },
+  { label: "Community", href: "https://discord.gg/6sjEPmumEU" },
   { label: "Docs", href: `${siteConfig.mainSiteUrl}/docs` },
 ] as const;
 
@@ -35,11 +35,11 @@ export const ctaLink = {
 } as const;
 
 export const socialLinks = [
-  { label: "X", icon: "/icons/x.svg", href: "https://x.com/pixelfork" },
-  { label: "Instagram", icon: "/icons/instagram.svg", href: "https://www.instagram.com/pixelfork" },
-  { label: "YouTube", icon: "/icons/youtube.svg", href: "https://www.youtube.com/@pixelfork" },
-  { label: "Discord", icon: "/icons/discord.svg", href: "https://discord.gg/pixelfork" },
-  { label: "Reddit", icon: "/icons/reddit.svg", href: "https://www.reddit.com/r/pixelfork" },
+  { label: "X", icon: "/icons/x.svg", href: "https://x.com/pixelfork_ai" },
+  { label: "Instagram", icon: "/icons/instagram.svg", href: "https://www.instagram.com/pixelfork.ai" },
+  { label: "YouTube", icon: "/icons/youtube.svg", href: "https://www.youtube.com/@Pixelforkk" },
+  { label: "Discord", icon: "/icons/discord.svg", href: "https://discord.gg/6sjEPmumEU" },
+  { label: "Reddit", icon: "/icons/reddit.svg", href: "https://www.reddit.com/r/pixelfork/" },
 ] as const;
 
 export const footerLinks = [
@@ -69,4 +69,10 @@ export function absoluteUrl(path = "/") {
   // The home page is /blog, not /blog/ (Next redirects the trailing slash away).
   if (path === "/" || path === "") return siteConfig.url;
   return `${siteConfig.url}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+/** Links that leave Pixelfork (e.g. Discord) open in a new tab. */
+export function externalLinkProps(href: string) {
+  const host = new URL(href, siteConfig.mainSiteUrl).hostname.replace(/^www\./, "");
+  return host === new URL(siteConfig.mainSiteUrl).hostname.replace(/^www\./, "") ? {} : { target: "_blank", rel: "noopener noreferrer" };
 }

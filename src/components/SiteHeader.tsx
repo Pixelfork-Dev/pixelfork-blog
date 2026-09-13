@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { assetPath, ctaLink, mainNav, siteConfig } from "@/config/site";
+import { assetPath, ctaLink, externalLinkProps, mainNav, siteConfig } from "@/config/site";
 import { MobileMenu } from "./MobileMenu";
 import { SocialLinks } from "./SocialLinks";
 import styles from "./SiteHeader.module.css";
@@ -17,7 +17,7 @@ export function SiteHeader() {
             <ul>
               {mainNav.map((item) => (
                 <li key={item.label}>
-                  <a href={item.href} className={styles.navLink}>
+                  <a href={item.href} className={styles.navLink} {...externalLinkProps(item.href)}>
                     {item.label}
                   </a>
                 </li>
