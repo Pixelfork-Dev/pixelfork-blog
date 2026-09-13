@@ -106,6 +106,8 @@ export const posts = pgTable(
       .references(() => authors.id, { onDelete: "restrict" }),
     createdById: uuid("created_by_id").references(() => users.id, { onDelete: "set null" }),
     updatedById: uuid("updated_by_id").references(() => users.id, { onDelete: "set null" }),
+    /** Set when the post was created through the Publishing API. */
+    createdByTokenId: uuid("created_by_token_id").references(() => apiTokens.id, { onDelete: "set null" }),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     ...timestamps,
   },
@@ -144,6 +146,23 @@ export const redirects = pgTable("redirects", {
 /* ----------------------------------- Media ---------------------------------- */
 
 /** Uploaded images (Vercel Blob in production, public/uploads locally), already resized to WebP. */
+/**
+ * Publishing API tokens for automation (e.g. the scheduled article writer). Only a SHA-256 hash is
+ * stored; the token is shown once. Scopes limit what a token can do.
+ */
+export const apiTokens = pgTable("api_tokens", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  tokenHash: text("token_hash").notNull().unique(),
+  /** First characters of the token, to recognise it in the admin. */
+  prefix: text("prefix").notNull(),
+  scopes: text("scopes").array().notNull(),
+  createdById: uuid("created_by_id").references(() => users.id, { onDelete: "set null" }),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  ...timestamps,
+});
+
 export const media = pgTable(
   "media",
   {
@@ -158,6 +177,7 @@ export const media = pgTable(
     height: integer("height").notNull(),
     alt: text("alt").notNull().default(""),
     uploadedById: uuid("uploaded_by_id").references(() => users.id, { onDelete: "set null" }),
+    uploadedByTokenId: uuid("uploaded_by_token_id").references(() => apiTokens.id, { onDelete: "set null" }),
     ...timestamps,
   },
   (t) => [index("media_created_idx").on(t.createdAt)],
@@ -195,3 +215,4 @@ export type TagRow = typeof tags.$inferSelect;
 export type AuthorRow = typeof authors.$inferSelect;
 export type MediaRow = typeof media.$inferSelect;
 export type RedirectRow = typeof redirects.$inferSelect;
+export type ApiTokenRow = typeof apiTokens.$inferSelect;

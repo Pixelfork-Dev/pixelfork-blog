@@ -12,6 +12,7 @@ const items = [
   { href: "/admin/authors", label: "Authors" },
   { href: "/admin/redirects", label: "Redirects" },
   { href: "/admin/users", label: "Users", adminOnly: true },
+  { href: "/admin/api-tokens", label: "API tokens", adminOnly: true },
 ];
 
 const upcoming: string[] = [];

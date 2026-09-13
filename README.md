@@ -26,6 +26,9 @@ First run: open `/blog/admin/register` and create an account with an email liste
 | `npm run build` | `db:setup` + `content:sync` + `next build` (what Vercel runs) |
 | `npm run post:publish -- <slug>` | Publish an article package from `content/posts/<slug>` (see `content/posts/types.ts`) |
 | `npm run post:preview -- <slug>` | Render an article package's infographics to PNG for checking |
+| `npm run post:send -- <slug>` | Send an article package to the live blog as a draft through the Publishing API (token from the Keychain) |
+| `npm run post:send -- --cover <slug> <image> "<alt>"` | Replace a live post's cover through the Publishing API |
+| `npm run cover -- <slug> "<subject>"` | Generate a cover with Nano Banana 2 (Gemini API key from the Keychain) |
 | `npm run content:sync` | Import new article packages as **drafts** (runs on every Vercel build; never overwrites existing posts) |
 
 ## Admin & access
@@ -58,6 +61,21 @@ rejected instead of overwriting the first.
   flattened to one hop. *Admin → Redirects* lists them with hit counts and accepts manual redirects (for example old blog URLs).
   Redirects are only looked up for URLs that would otherwise 404, so normal page views stay fully static.
 - **Dashboard → SEO health:** published posts with fixable issues.
+
+## Publishing API (automation)
+
+*Admin → API tokens* (admins) creates tokens for automation. Only a SHA-256 hash is stored and the token is shown once.
+Scopes: `drafts:create` (upload images, create **draft** posts) and `covers:update` (replace a post's cover). Tokens can't publish,
+edit text, delete or read users; limits are 5 posts and 60 images per token per 24 hours; revoking takes effect immediately.
+
+| Endpoint | Scope | |
+| --- | --- | --- |
+| `POST /blog/api/publish/media` | either | multipart `file` (+ `alt`) → `{ url, width, height }` |
+| `GET /blog/api/publish/posts/<slug>` | either | `{ exists, status }` |
+| `POST /blog/api/publish/posts` | `drafts:create` | JSON `{ slug, title, excerpt, seoTitle, seoDescription, focusKeyword, tags, author?, cover?, html }` → draft |
+| `PUT /blog/api/publish/posts/<slug>/cover` | `covers:update` | JSON `{ src, alt }` (an image this token uploaded) |
+
+Send `Authorization: Bearer <token>`. Images referenced in `html` must have been uploaded through the API first.
 
 ## Media & tags
 

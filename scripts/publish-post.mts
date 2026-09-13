@@ -16,7 +16,6 @@
  */
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { PostPackage } from "../content/posts/types.ts";
 
 try {
   process.loadEnvFile(".env.local");
@@ -25,10 +24,9 @@ try {
 const { db, schema } = await import("../src/db/index.ts");
 const { processImage, storeImage, removeImage } = await import("../src/lib/media/storage.ts");
 const { sanitizePostHtml } = await import("../src/lib/sanitize.ts");
-const { markdownToHtml, countWords } = await import("../src/lib/markdown.ts");
-const { placeholderSvg, esc } = await import("./lib/graphics.mts");
+const { countWords } = await import("../src/lib/markdown.ts");
+const { renderPackage, loadPackage } = await import("./lib/package.mts");
 const { eq, inArray } = await import("drizzle-orm");
-const sharp = (await import("sharp")).default;
 
 const args = process.argv.slice(2);
 const flags = new Set(args.filter((a) => a.startsWith("--")));
@@ -54,9 +52,7 @@ if (!slugs.length) {
   process.exit(1);
 }
 
-type Media = { url: string; alt: string; width: number; height: number };
-
-async function upload(buffer: Buffer, filename: string, alt: string): Promise<Media> {
+async function upload(buffer: Buffer, filename: string, alt: string) {
   const processed = await processImage(buffer);
   const stored = await storeImage(processed.buffer, filename);
   const [row] = await db
@@ -66,62 +62,16 @@ async function upload(buffer: Buffer, filename: string, alt: string): Promise<Me
   return { url: row.url, alt, width: row.width!, height: row.height! };
 }
 
-const svgToPng = (svg: string) => sharp(Buffer.from(svg)).png().toBuffer();
-
 async function publish(slug: string, baseTime: Date) {
   const dir = path.join(root, slug);
-  const pkg: PostPackage = (await import(path.join(dir, "post.mts"))).default;
-  if (pkg.slug !== slug) throw new Error(`${slug}: package slug "${pkg.slug}" doesn't match its folder`);
+  const pkg = await loadPackage(slug);
 
   const existing = await db.query.posts.findFirst({ where: eq(schema.posts.slug, slug) });
   if (existing && !flags.has("--replace")) {
     if (!sync) console.log(`- ${slug}: already exists, skipped (use --replace to update)`);
     return;
   }
-  if (!pkg.body === !pkg.bodyHtml) throw new Error(`${slug}: set exactly one of body or bodyHtml`);
-
-  // Validate tokens before uploading anything.
-  const tokens = [...(pkg.body ?? "").matchAll(/\{\{img:([\w-]+)(?:\|([^}]*))?\}\}/g)];
-  const known = new Set([...Object.keys(pkg.graphics ?? {}), ...Object.keys(pkg.screenshots ?? {}), ...Object.keys(pkg.placeholders ?? {})]);
-  const unknown = tokens.map((t) => t[1]).filter((k) => !known.has(k));
-  if (unknown.length) throw new Error(`${slug}: unknown image keys ${unknown.join(", ")}`);
-
-  let cover: Media | null = null;
-  try {
-    const buf = await fs.readFile(path.join(dir, pkg.cover.file));
-    cover = await upload(await sharp(buf).resize(1600, 900, { fit: "cover" }).png().toBuffer(), `${slug}-cover.png`, pkg.cover.alt);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-    console.warn(`  ! ${slug}: cover file missing (${pkg.cover.file}), publishing without a cover`);
-  }
-
-  const images = new Map<string, { media: Media; placeholder: boolean }>();
-  for (const key of new Set(tokens.map((t) => t[1]))) {
-    if (pkg.graphics?.[key]) {
-      const g = pkg.graphics[key];
-      images.set(key, { media: await upload(await svgToPng(g.svg), `${slug}-${key}.png`, g.alt), placeholder: false });
-    } else if (pkg.screenshots?.[key]) {
-      const s = pkg.screenshots[key];
-      images.set(key, { media: await upload(await fs.readFile(path.join(dir, s.file)), `${slug}-${key}.png`, s.alt), placeholder: false });
-    } else {
-      const p = pkg.placeholders![key];
-      images.set(key, { media: await upload(await svgToPng(placeholderSvg(p.what, p.how)), `${slug}-${key}.png`, `Placeholder: ${p.what}`), placeholder: true });
-    }
-  }
-
-  let html = pkg.body ? await markdownToHtml(pkg.body) : pkg.bodyHtml!;
-  for (const file of new Set([...html.matchAll(/\{\{file:([^}]+)\}\}/g)].map((m) => m[1]))) {
-    const media = await upload(await fs.readFile(path.join(dir, file)), `${slug}-${path.basename(file)}`, "");
-    html = html.replaceAll(`{{file:${file}}}`, media.url);
-  }
-  html = html.replace(/<p>\{\{img:([\w-]+)(?:\|([^}]*))?\}\}<\/p>/g, (_, key: string, caption = "") => {
-    const { media, placeholder } = images.get(key)!;
-    const credit = pkg.screenshots?.[key]?.credit;
-    const text = placeholder ? `⚠ Attention required: ${caption}` : [caption, credit].filter(Boolean).join(" ");
-    const img = `<img src="${media.url}" alt="${esc(media.alt)}" width="${media.width}" height="${media.height}">`;
-    return text ? `${img}<p><em>${text}</em></p>` : img;
-  });
-  if (/\{\{img:/.test(html)) throw new Error(`${slug}: image token must be on its own line`);
+  const { cover, html, placeholders } = await renderPackage(pkg, dir, upload);
   const content = sanitizePostHtml(html);
 
   const [author] = await db.select().from(schema.authors).where(eq(schema.authors.slug, pkg.author ?? "pixelfork-team"));
@@ -173,9 +123,8 @@ async function publish(slug: string, baseTime: Date) {
   }
   await db.insert(schema.postTags).values(pkg.tags.map((s, position) => ({ postId, tagId: tagRows.find((t) => t.slug === s)!.id, position })));
 
-  const placeholders = [...images.values()].filter((i) => i.placeholder).length;
   console.log(
-    `✓ ${slug}: ${existing ? "updated" : "created"} (${status}) · ${countWords(content, "html")} words · ${images.size} images` +
+    `✓ ${slug}: ${existing ? "updated" : "created"} (${status}) · ${countWords(content, "html")} words` +
       (placeholders ? ` · ⚠ ${placeholders} screenshot placeholders` : "") +
       (cover ? "" : " · ⚠ no cover"),
   );

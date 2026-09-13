@@ -14,6 +14,7 @@
     "post:publish": "tsx --conditions=react-server scripts/publish-post.mts",
     "post:preview": "tsx scripts/preview-graphics.mts",
     "cover": "tsx scripts/generate-cover.mts",
+    "post:send": "tsx scripts/send-post.mts",
     "content:sync": "tsx --conditions=react-server scripts/publish-post.mts --sync"
   },
   "dependencies": {
