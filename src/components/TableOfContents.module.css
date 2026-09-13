@@ -1,0 +1,29 @@
+.heading {
+  margin-bottom: 12px;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.list a {
+  color: var(--color-text-muted);
+  transition: color 0.15s ease;
+}
+
+.list a:hover {
+  color: var(--color-text);
+}
+
+.list li[data-depth="3"] {
+  padding-left: 14px;
+}

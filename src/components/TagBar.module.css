@@ -1,0 +1,45 @@
+.bar {
+  position: relative;
+  /* The design leaves a 1px gap above the strip (686 → 687) and ends at 745. */
+  padding-top: 1px;
+}
+
+.list {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  display: flex;
+  flex-shrink: 0;
+  /* Vertical dashed separator after each item */
+  background-image: linear-gradient(to bottom, var(--color-line) 50%, transparent 50%);
+  background-size: 1px calc(var(--dash) * 2);
+  background-repeat: repeat-y;
+  background-position: right top;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  height: 58px;
+  padding: 0 21px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: normal;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.link:hover,
+.link[aria-current="page"] {
+  color: var(--color-text);
+}

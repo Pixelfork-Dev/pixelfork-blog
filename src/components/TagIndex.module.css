@@ -1,0 +1,29 @@
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 48px 16px;
+}
+
+.title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.page {
+  color: var(--color-text-muted);
+}
+
+.description {
+  max-width: 60ch;
+  color: var(--color-body);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.count {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}

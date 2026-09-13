@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pixelfork Blog
 
-## Getting Started
+The Pixelfork blog, built with Next.js 16 (App Router). Every page is generated as static HTML at build time.
+Design source: Figma **Pixelfork MVP**, frame `2898:21926`.
 
-First, run the development server:
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local   # set NEXT_PUBLIC_SITE_URL
+npm install
+npm run dev                  # http://localhost:3000
+npm run build && npm start   # production
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Writing a post
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Add a Markdown file to `content/posts/`. The file name becomes the URL slug (`/posts/<slug>`).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```md
+---
+title: "Post title"
+excerpt: "120–160 character summary, used for the meta description, cards and RSS."
+publishedAt: 2026-09-12
+updatedAt: 2026-09-20        # optional, used for dateModified
+tags: [tutorial, insights]   # slugs from src/lib/taxonomy.ts
+author: pixelfork-team
+featured: true               # optional, pins the post to the featured area
+draft: false                 # optional
+seoTitle: "..."              # optional <title> override
+seoDescription: "..."        # optional meta description override
+cover:
+  src: /images/posts/my-cover.png
+  alt: "Describe the image"
+  width: 1200
+  height: 630
+---
 
-## Learn More
+Markdown body (GitHub-flavored: tables, code blocks…)
+```
 
-To learn more about Next.js, take a look at the following resources:
+Drafts and posts with a future `publishedAt` date are left out of the build.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+content/posts/          Markdown articles
+src/config/site.ts      Site URL, navigation, social links, pagination sizes
+src/lib/posts.ts        Content repository (the only code that reads content)
+src/lib/taxonomy.ts     Tags and authors
+src/lib/seo.ts          Metadata + JSON-LD builders
+src/components/         UI (header, cards, grid, tag bar, pagination…)
+src/app/                Routes, sitemap, robots, RSS, OG images
+```
 
-## Deploy on Vercel
+### Routes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Route | Purpose |
+| --- | --- |
+| `/`, `/page/[n]` | Blog index (featured posts, category bar, grid) |
+| `/posts/[slug]` | Article |
+| `/tag/[slug]`, `/tag/[slug]/page/[n]` | Tag archive |
+| `/sitemap.xml`, `/robots.txt`, `/feed.xml`, `/manifest.webmanifest` | Crawlers, feed readers and PWA manifest |
+| `/opengraph-image`, `/posts/[slug]/opengraph-image` | Generated 1200×630 social cards |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## SEO checklist (built in)
+
+- Static HTML for every page, with the correct heading order (one H1 per page)
+- Canonical URLs, Open Graph and Twitter cards, article published/modified times, and a generated OG image for each post
+- JSON-LD: `Organization` + `WebSite` (every page), `Blog`, `BlogPosting`, `BreadcrumbList` and `CollectionPage`
+- `sitemap.xml` with image entries and `lastmod`; `robots.txt` blocks non-production deployments
+- RSS 2.0 feed, linked from every page
+- `next/image` (AVIF/WebP, responsive `sizes`), a priority LCP image, and self-hosted Inter font via `next/font`
+- Security headers, `poweredByHeader` off, a skip link, accessible navigation and pagination
+
+## Roadmap hooks
+
+- **Admin panel / CMS:** swap the internals of `src/lib/posts.ts` for a database or CMS query and keep the
+  function signatures. `robots.txt` already blocks `/admin` and `/api/`.
+- **Scheduled publishing:** add ISR/on-demand revalidation when posts come from a database.
+- **Search, newsletter, comments, author pages:** types in `src/lib/types.ts` are ready to extend.
+
+## GitHub Pages preview
+
+Every push to `main` runs `.github/workflows/deploy-pages.yml`. It builds a static export (`GITHUB_PAGES=true`)
+served under `/<repo-name>`, with `noindex` switched on so the preview never competes with the real domain in search.
+To test the same build locally:
+
+```bash
+GITHUB_PAGES=true NEXT_PUBLIC_BASE_PATH=/pixelfork-blog NEXT_PUBLIC_NOINDEX=true npm run build   # outputs ./out
+```
+
+GitHub Pages can't run server features, so this mode turns off image optimization and security headers.
+Use Vercel or a Node host for production.

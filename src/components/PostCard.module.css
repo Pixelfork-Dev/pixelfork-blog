@@ -1,0 +1,122 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 16px 24px;
+  filter: drop-shadow(0 0 6.5px rgba(0, 0, 0, 0.15));
+}
+
+.media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 377 / 223.68;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  flex-shrink: 0;
+}
+
+.image {
+  object-fit: cover;
+  object-position: 50% 22%;
+  transition: transform 0.4s ease;
+}
+
+.card:hover .image {
+  transform: scale(1.03);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.title {
+  color: var(--color-text);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: normal;
+  overflow-wrap: break-word;
+}
+
+/* Stretched link: the whole card is clickable while tag links stay independent. */
+.link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--color-line);
+  text-underline-offset: 4px;
+}
+
+.meta {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.tags {
+  position: relative;
+  z-index: 2;
+}
+
+/* ---- Hero (large featured, left column) ---- */
+.hero {
+  gap: 24px;
+}
+
+.hero .media {
+  aspect-ratio: 538.5 / 319.5;
+}
+
+.hero .title {
+  font-size: 24px;
+}
+
+/* ---- Side (horizontal featured, right column) ---- */
+.side {
+  flex-direction: row;
+  gap: 24px;
+}
+
+.side .media {
+  width: 323px;
+  aspect-ratio: 323 / 192;
+}
+
+.side .body {
+  flex: 1;
+}
+
+.side .title {
+  font-size: 24px;
+}
+
+@media (max-width: 767px) {
+  .hero .title,
+  .side .title {
+    font-size: 20px;
+  }
+
+  .side {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .side .media {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  .side .media {
+    width: 45%;
+  }
+}

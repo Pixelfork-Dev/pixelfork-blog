@@ -1,0 +1,91 @@
+.header {
+  position: relative;
+  z-index: 10;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 6px;
+  min-height: 88px;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+
+.logo {
+  display: block;
+  flex-shrink: 0;
+}
+
+.logo img {
+  width: 128px;
+  height: 22px;
+}
+
+.nav ul {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  padding: 0;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  padding: 12px 10px;
+  border-radius: 4px;
+  color: var(--color-nav);
+  font-size: 16px;
+  line-height: 16px;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.navLink:hover {
+  color: var(--color-text);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  /* Figma strokes are "inside": subtract the 0.5px border so the button stays 40px tall. */
+  padding: 11.5px 15.5px;
+  border: 0.5px solid rgba(102, 102, 102, 0.05);
+  border-radius: 34px;
+  background: #fff;
+  color: #000;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.cta:hover {
+  background: #e6e6e6;
+}
+
+@media (max-width: 1023px) {
+  .nav,
+  .socials {
+    display: none;
+  }
+}
+
+@media (max-width: 559px) {
+  .cta {
+    display: none;
+  }
+}

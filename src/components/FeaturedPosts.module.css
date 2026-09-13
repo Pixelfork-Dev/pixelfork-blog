@@ -1,0 +1,52 @@
+.layout {
+  display: grid;
+  grid-template-columns: 570px minmax(0, 1fr);
+}
+
+.hero {
+  background-image: linear-gradient(to bottom, var(--color-line) 50%, transparent 50%);
+  background-size: 1px calc(var(--dash) * 2);
+  background-repeat: repeat-y;
+  background-position: right top;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Matches the 13px breathing room around the stacked cards in the design. */
+.sideItem {
+  flex: 1;
+  padding: 13px 0;
+}
+
+.sideItem + .sideItem {
+  background-image: linear-gradient(to right, var(--color-line) 50%, transparent 50%);
+  background-size: calc(var(--dash) * 2) 1px;
+  background-repeat: repeat-x;
+  background-position: left top;
+}
+
+@media (max-width: 1279px) {
+  .layout {
+    grid-template-columns: minmax(0, 46%) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1023px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero {
+    background-image: linear-gradient(to right, var(--color-line) 50%, transparent 50%);
+    background-size: calc(var(--dash) * 2) 1px;
+    background-repeat: repeat-x;
+    background-position: left bottom;
+  }
+
+  .sideItem {
+    padding: 0;
+  }
+}

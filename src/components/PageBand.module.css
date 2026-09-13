@@ -1,0 +1,23 @@
+.band {
+  min-height: 81px;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-height: 81px;
+  padding: 20px 16px;
+}
+
+@media (max-width: 767px) {
+  .band,
+  .inner {
+    min-height: 24px;
+  }
+
+  .inner {
+    padding: 12px 16px;
+  }
+}
