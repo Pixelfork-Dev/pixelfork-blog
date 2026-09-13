@@ -87,11 +87,14 @@ export async function renderPostOgImage({ cover, tag, title }: { cover: string |
     (
       <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", fontFamily: "Inter", color: "#fff" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={image} width={ogSize.width} height={ogSize.height} alt="" style={{ position: "absolute", inset: 0 }} />
+        <img src={image} width={ogSize.width} height={ogSize.height} alt="" style={{ position: "absolute", top: 0, left: 0 }} />
         <div
           style={{
             position: "absolute",
-            inset: 0,
+            top: 0,
+            left: 0,
+            width: ogSize.width,
+            height: ogSize.height,
             display: "flex",
             backgroundImage: "linear-gradient(0deg, rgba(13,13,13,0.88) 0%, rgba(13,13,13,0.5) 38%, rgba(13,13,13,0) 70%)",
           }}
