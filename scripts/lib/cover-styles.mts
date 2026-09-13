@@ -39,26 +39,12 @@ Palette: vivid gradient background from deep violet to hot pink, mint green and 
     prompt: `Style: detailed 16-bit pixel art scene, crisp visible pixels, limited but bright palette, dithered sky, parallax layers, charming retro game atmosphere.
 Palette: twilight purple and teal sky, warm orange sunset glow, bright green foliage, gold highlights.`,
   },
-  "clay-toy": {
-    name: "clay-toy",
-    label: "Clay / toy 3D",
-    bestFor: "beginner guides, friendly how-tos, testing, teams",
-    prompt: `Style: soft claymation-style 3D render, plasticine materials with visible fingerprint texture, rounded cute proportions, tilt-shift miniature depth of field, cheerful studio lighting.
-Palette: pastel peach background, cream, baby blue, lime green and Pixelfork orange pieces.`,
-  },
   "paper-cut": {
     name: "paper-cut",
     label: "Layered paper-cut",
     bestFor: "planning, documents, storytelling, design process",
     prompt: `Style: layered paper-cut craft illustration, several stacked paper layers with soft drop shadows, visible paper texture and cut edges, handmade diorama feel.
 Palette: layers of turquoise, deep teal, warm yellow, coral and Pixelfork orange on a light sand background.`,
-  },
-  "neon-synthwave": {
-    name: "neon-synthwave",
-    label: "Neon synthwave",
-    bestFor: "AI, technology, performance, the future of games",
-    prompt: `Style: glowing neon synthwave illustration, retro-futuristic grid floor fading to the horizon, light trails, bloom and haze, sleek stylized 3D objects. Any screens show only glowing abstract shapes, never code or text.
-Palette: deep indigo night background, electric magenta and cyan neon, Pixelfork orange glow as the brightest light.`,
   },
   blueprint: {
     name: "blueprint",

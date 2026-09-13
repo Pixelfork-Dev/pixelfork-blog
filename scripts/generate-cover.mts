@@ -3,8 +3,8 @@
  *
  *   npm run cover -- <slug> "<subject>" --style <style> [--out path.webp]
  *
- * Styles live in scripts/lib/cover-styles.mts (vibrant-diorama, flat-vector, pixel-art, clay-toy, paper-cut,
- * neon-synthwave, blueprint, cinematic-3d). Without --style the original dark diorama look is used with reference images.
+ * Styles live in scripts/lib/cover-styles.mts (vibrant-diorama, flat-vector, pixel-art, paper-cut, blueprint,
+ * cinematic-3d). Without --style the original dark diorama look is used with reference images.
  *
  * - The API key is read from the macOS Keychain (account "pixelfork-blog", service "GEMINI_API_KEY")
  *   and is never printed or written to disk.

@@ -28,3 +28,5 @@ date,slug,model,prompt_tokens,image_tokens,est_cost_usd
 2026-09-13T17:00:54.271Z,build-a-2d-platformer-character-controller:blueprint,gemini-3.1-flash-image,221,1680,0.1009
 2026-09-13T17:00:54.849Z,how-to-make-a-video-game:vibrant-diorama,gemini-3.1-flash-image,217,1680,0.1009
 2026-09-13T17:00:55.141Z,monetization-strategies-for-indie-mobile-games:vibrant-diorama,gemini-3.1-flash-image,217,1680,0.1009
+2026-09-13T17:08:37.612Z,market-your-indie-game-before-launch:flat-vector,gemini-3.1-flash-image,210,1680,0.1009
+2026-09-13T17:08:39.700Z,game-jam-survival-guide:pixel-art,gemini-3.1-flash-image,224,1680,0.1009
