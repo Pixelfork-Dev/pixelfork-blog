@@ -31,7 +31,7 @@ export const mainNav = [
 
 export const ctaLink = {
   label: "Create your own game",
-  href: `${siteConfig.mainSiteUrl}/create`,
+  href: "https://www.pixelfork.ai",
 } as const;
 
 export const socialLinks = [
