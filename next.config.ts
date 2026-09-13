@@ -32,6 +32,11 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
     ],
   },
+  async redirects() {
+    // Direct visits to the blog project's own domain (e.g. *.vercel.app/) land on the blog.
+    // On pixelfork.ai the root belongs to the main site, which only forwards /blog/* here.
+    return basePath ? [{ source: "/", destination: basePath, basePath: false, permanent: false }] : [];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
