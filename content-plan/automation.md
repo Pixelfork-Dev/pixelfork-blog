@@ -35,9 +35,18 @@ Project: `/Users/fkhasiyev/Documents/Pixelfork - Claude/Blog`
      Otherwise add a `placeholders` entry saying exactly what is needed.
 6. **Check the images.** `npm run post:preview -- <slug> /tmp/<slug>-preview` and look at every PNG: no overlapping
    or clipped text, readable sizes. Fix and re-render until clean.
-7. **Cover.** If `content/posts/<slug>/cover.webp` already exists, use it. Otherwise
-   `npm run cover -- <slug> "<one-sentence diorama subject>"`, then look at the image: no text/letters/logos, subject
-   matches the topic. Regenerate once at most.
+7. **Cover (art direction).** Existing `content/posts/<slug>/cover.webp` files from before 2026-09-13 are the old dark
+   style: replace them. Decide the cover type:
+   - **B, real product** (the article is about a specific existing game, engine, app or store, e.g. Unity, Roblox, Godot, Steam):
+     AI can't depict it. Don't generate. Send the draft without a cover (delete the old `cover.webp` or leave `cover.file` pointing
+     to a missing file) and ask the user in the report for a real screenshot or official press image.
+   - **C, graphic** (lists, rankings, comparisons, performance, systems): `npm run cover:graphic -- <slug> <gauge|network|document|bars> <#color1> <#color2>`
+     with a vivid two-color gradient that differs from recent covers.
+   - **A, illustration** (everything else): pick a style from `scripts/lib/cover-styles.mts` that fits the topic and wasn't used by
+     the previous 2 articles (check `content-plan/image-log.csv`), then `npm run cover -- <slug> "<one-sentence subject>" --style <style>`.
+     Available styles: vibrant-diorama, flat-vector, pixel-art, paper-cut, blueprint, cinematic-3d. **Never use neon or clay styles** (the user dislikes them).
+   Look at the result: no text, letters, numbers or logos; subject fits the topic; colorful. Regenerate once at most.
+   Never put the title on the cover image; the site adds it (hero card and social images).
 8. **Type check.** `npx tsc --noEmit` must pass.
 9. **Send the draft.** `npm run post:send -- <slug>`. It refuses duplicates and prints the admin edit link.
 10. **Record it.** In `content-plan/progress.md` set the row to `draft` with today's date. Commit the package and
