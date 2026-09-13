@@ -1,0 +1,1 @@
+ALTER TABLE "authors" ADD COLUMN "same_as" text[] DEFAULT '{}'::text[] NOT NULL;

@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+import { AuthorAvatar } from "@/components/AuthorAvatar";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageBand } from "@/components/PageBand";
 import { PostGrid } from "@/components/PostGrid";
@@ -36,7 +38,10 @@ export function ArticleView({ post, related = [] }: { post: Post; related?: Post
             <p className={styles.lead}>{post.excerpt}</p>
             <p className={styles.meta}>
               <span>
-                By <span className={styles.author}>{post.author.name}</span>
+                By{" "}
+                <Link href={`/authors/${post.author.slug}`} className={styles.author} rel="author">
+                  {post.author.name}
+                </Link>
               </span>
               <span aria-hidden="true">·</span>
               <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
@@ -71,7 +76,20 @@ export function ArticleView({ post, related = [] }: { post: Post; related?: Post
               <ShareLinks url={url} title={post.title} />
             </div>
           </aside>
-          <div className={styles.prose} dangerouslySetInnerHTML={{ __html: post.html }} />
+          <div className={styles.body}>
+            <div className={styles.prose} dangerouslySetInnerHTML={{ __html: post.html }} />
+            <aside className={styles.authorBox} aria-label="About the author">
+              <AuthorAvatar author={post.author} size={64} />
+              <div>
+                <p className={styles.authorLabel}>Written by</p>
+                <Link href={`/authors/${post.author.slug}`} className={styles.authorName}>
+                  {post.author.name}
+                </Link>
+                {post.author.role && <p className={styles.authorRole}>{post.author.role}</p>}
+                {post.author.bio && <p className={styles.authorBio}>{post.author.bio}</p>}
+              </div>
+            </aside>
+          </div>
         </div>
       </article>
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { absoluteUrl, siteConfig, socialLinks } from "@/config/site";
-import type { Post, PostSummary, Tag } from "./types";
+import type { Author, Post, PostSummary, Tag } from "./types";
 
 /* ------------------------------------------------------------------ */
 /* Metadata                                                            */
@@ -121,6 +121,35 @@ export function websiteJsonLd() {
   };
 }
 
+/** schema.org Person for a byline, pointing at the author's page on the blog. */
+export function personJsonLd(author: Author) {
+  return {
+    "@type": "Person",
+    "@id": `${absoluteUrl(`/authors/${author.slug}`)}#person`,
+    name: author.name,
+    url: absoluteUrl(`/authors/${author.slug}`),
+    ...(author.role ? { jobTitle: author.role } : {}),
+    ...(author.bio ? { description: author.bio } : {}),
+    ...(author.avatar ? { image: author.avatar.startsWith("/") ? absoluteUrl(author.avatar) : author.avatar } : {}),
+    ...(author.url || author.sameAs.length ? { sameAs: [author.url, ...author.sameAs].filter(Boolean) } : {}),
+  };
+}
+
+export function authorJsonLd(author: Author, posts: PostSummary[], path: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    url: absoluteUrl(path),
+    name: `${author.name} — ${siteConfig.name}`,
+    isPartOf: { "@id": WEBSITE_ID },
+    mainEntity: {
+      ...personJsonLd(author),
+      ...(posts.length ? { mainEntityOfPage: absoluteUrl(path) } : {}),
+    },
+    hasPart: posts.map((p) => ({ "@type": "BlogPosting", headline: p.title, url: absoluteUrl(`/posts/${p.slug}`), datePublished: p.publishedAt })),
+  };
+}
+
 function postListItem(post: PostSummary) {
   return {
     "@type": "BlogPosting",
@@ -130,7 +159,7 @@ function postListItem(post: PostSummary) {
     datePublished: post.publishedAt,
     dateModified: post.updatedAt,
     image: absoluteUrl(post.cover.src),
-    author: { "@type": "Person", name: post.author.name, url: post.author.url },
+    author: { "@type": "Person", name: post.author.name, url: absoluteUrl(`/authors/${post.author.slug}`) },
   };
 }
 
@@ -193,11 +222,7 @@ export function postJsonLd(post: Post) {
     inLanguage: siteConfig.language,
     keywords: post.tags.map((t) => t.name).join(", "),
     articleSection: post.tags[0]?.name,
-    author: {
-      "@type": "Person",
-      name: post.author.name,
-      url: post.author.url,
-    },
+    author: personJsonLd(post.author),
     publisher: organizationJsonLd(),
     isPartOf: { "@id": BLOG_ID },
   };

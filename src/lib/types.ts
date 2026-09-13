@@ -11,6 +11,7 @@ export interface Author {
   url?: string;
   avatar?: string;
   bio?: string;
+  sameAs: string[];
 }
 
 export interface Tag {

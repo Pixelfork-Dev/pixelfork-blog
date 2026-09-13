@@ -9,6 +9,7 @@ const items = [
   { href: "/admin/posts", label: "Posts" },
   { href: "/admin/media", label: "Media" },
   { href: "/admin/tags", label: "Tags" },
+  { href: "/admin/authors", label: "Authors" },
   { href: "/admin/users", label: "Users", adminOnly: true },
 ];
 

@@ -46,6 +46,9 @@ rejected instead of overwriting the first.
 - *Admin → Media:* drag-and-drop uploads (JPEG, PNG, WebP, GIF, AVIF; SVG is rejected). Uploads are checked by their actual
   content, auto-rotated, limited to 2400px and converted to WebP. Dimensions are stored so pages don't shift while images load.
   Images still used by a post can't be deleted. Locally, files go to `.data/uploads`; in production they go to Vercel Blob.
+- *Admin → Authors:* every byline (team members get one on first sign-in; guest bylines can be added). Name, job title,
+  bio, photo, website and profile links feed the public `/authors/<slug>` page, the author box on articles and `Person` JSON-LD
+  (`sameAs`) — signals Google uses to judge expertise. Authors without published posts have no public page.
 - *Admin → Tags:* create, rename, describe (the description is the tag page's meta description), reorder (the order of the category bar) and delete.
 
 ## Deploying to Vercel
@@ -96,5 +99,5 @@ seed/                  Starter posts and tags imported into an empty database
 1. ✅ Foundation: Postgres, Google sign-in, roles, starter content imported
 2. ✅ Posts: rich-text editor (Tiptap), drafts, preview, publish/unpublish, delete, conflict detection, on-demand revalidation
 3. ✅ Media library (uploads resized to WebP, alt text, picker in the editor, in-use protection) and tag management
-4. User profiles and public author pages
+4. ✅ Author profiles (admin) and public author pages with Person/ProfilePage JSON-LD, bylines and author boxes
 5. SEO panel, scheduled publishing, redirects

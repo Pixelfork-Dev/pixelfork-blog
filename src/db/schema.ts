@@ -34,6 +34,8 @@ export const authors = pgTable("authors", {
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
   websiteUrl: text("website_url"),
+  /** Social/profile URLs (X, LinkedIn, GitHub…) — used for JSON-LD sameAs. */
+  sameAs: text("same_as").array().notNull().default(sql`'{}'::text[]`),
   ...timestamps,
 });
 

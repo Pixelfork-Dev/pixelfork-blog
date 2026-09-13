@@ -28,6 +28,7 @@ function toAuthor(row: AuthorRow): Author {
     url: row.websiteUrl ?? undefined,
     avatar: row.avatarUrl ?? undefined,
     bio: row.bio ?? undefined,
+    sameAs: row.sameAs,
   };
 }
 
@@ -116,6 +117,22 @@ export const getTagBySlug = cache(async (slug: string): Promise<Tag | null> => {
   const row = await db.query.tags.findFirst({ where: eq(schema.tags.slug, slug) });
   return row ? toTag(row) : null;
 });
+
+export const getAuthorBySlug = cache(async (slug: string): Promise<Author | null> => {
+  const row = await db.query.authors.findFirst({ where: eq(schema.authors.slug, slug) });
+  return row ? toAuthor(row) : null;
+});
+
+export async function getPostsByAuthor(authorSlug: string) {
+  return (await getAllPosts()).filter((p) => p.author.slug === authorSlug);
+}
+
+/** Authors with at least one live post (for the sitemap and static generation). */
+export async function getActiveAuthors(): Promise<Author[]> {
+  const seen = new Map<string, Author>();
+  for (const post of await getAllPosts()) seen.set(post.author.slug, post.author);
+  return [...seen.values()];
+}
 
 /** Tags that have at least one live post, in category-bar order. */
 export async function getActiveTags(): Promise<Tag[]> {

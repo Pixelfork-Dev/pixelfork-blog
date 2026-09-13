@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { pageHref } from "@/components/Pagination";
 import { absoluteUrl } from "@/config/site";
-import { getActiveTags, getAllPosts, getPostsByTag, paginate, paginateHome } from "@/lib/posts";
+import { getActiveAuthors, getActiveTags, getAllPosts, getPostsByAuthor, getPostsByTag, paginate, paginateHome } from "@/lib/posts";
 
 export const dynamic = "force-static";
 
@@ -41,6 +41,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: p === 1 ? 0.6 : 0.4,
       });
     }
+  }
+
+  for (const author of await getActiveAuthors()) {
+    const authorPosts = await getPostsByAuthor(author.slug);
+    entries.push({
+      url: absoluteUrl(`/authors/${author.slug}`),
+      lastModified: authorPosts[0].updatedAt,
+      changeFrequency: "weekly",
+      priority: 0.5,
+    });
   }
 
   return entries;

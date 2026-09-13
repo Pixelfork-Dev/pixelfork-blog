@@ -41,6 +41,11 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
             </div>
           </div>
           <div className={styles.accountActions}>
+            {user.authorId && (
+              <Link href={`/admin/authors/${user.authorId}`} className={ui.buttonGhost}>
+                My profile
+              </Link>
+            )}
             <a href="/" target="_blank" rel="noreferrer" className={ui.buttonGhost}>
               View blog
             </a>
