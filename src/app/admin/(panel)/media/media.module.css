@@ -1,0 +1,208 @@
+.library {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+.picker {
+  height: 100%;
+  min-height: 0;
+}
+
+.browser {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.picker .browser {
+  overflow-y: auto;
+  max-height: calc(100vh - 180px);
+  padding-right: 4px;
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 24px;
+  border: 1px dashed var(--color-line);
+  font-size: 14px;
+  text-align: center;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.dropzone button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.dragging {
+  border-color: var(--color-brand);
+  background: rgba(242, 98, 7, 0.06);
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.searchRow input {
+  flex: 1;
+  max-width: 360px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+}
+
+.tile {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  border: 1px dashed var(--color-line);
+  border-radius: 4px;
+  background: #161616;
+  cursor: pointer;
+}
+
+.tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tile:hover {
+  border-color: var(--color-text-muted);
+}
+
+.selected {
+  border: 2px solid var(--color-brand);
+}
+
+.uploading {
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  text-align: center;
+  cursor: default;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.noAlt {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #e6b84d;
+  font-size: 11px;
+}
+
+.details {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px dashed var(--color-line);
+  font-size: 13px;
+}
+
+.preview {
+  width: 100%;
+  max-height: 220px;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  object-fit: contain;
+  background: #161616;
+}
+
+.filename {
+  overflow-wrap: anywhere;
+}
+
+.label {
+  margin-top: 10px;
+  color: var(--color-nav);
+}
+
+.altInput {
+  width: 100%;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.detailActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ---------------------------------- Picker dialog --------------------------------- */
+
+.dialog {
+  width: min(1100px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 1px dashed var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px dashed var(--color-line);
+}
+
+.dialogTitle {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.dialogBody {
+  padding: 20px;
+}
+
+@media (max-width: 899px) {
+  .library {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .details {
+    position: static;
+  }
+}

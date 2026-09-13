@@ -7,10 +7,12 @@ import styles from "./panel.module.css";
 const items = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/posts", label: "Posts" },
+  { href: "/admin/media", label: "Media" },
+  { href: "/admin/tags", label: "Tags" },
   { href: "/admin/users", label: "Users", adminOnly: true },
 ];
 
-const upcoming = ["Media", "Tags", "Settings"];
+const upcoming: string[] = [];
 
 export function AdminNav({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
@@ -31,7 +33,7 @@ export function AdminNav({ isAdmin }: { isAdmin: boolean }) {
             );
           })}
       </ul>
-      <p className={styles.navHeading}>Coming soon</p>
+      {upcoming.length > 0 && <p className={styles.navHeading}>Coming soon</p>}
       <ul>
         {upcoming.map((label) => (
           <li key={label}>

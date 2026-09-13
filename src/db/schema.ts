@@ -113,6 +113,28 @@ export const postTags = pgTable(
   (t) => [primaryKey({ columns: [t.postId, t.tagId] }), index("post_tags_tag_idx").on(t.tagId)],
 );
 
+/* ----------------------------------- Media ---------------------------------- */
+
+/** Uploaded images (Vercel Blob in production, public/uploads locally), already resized to WebP. */
+export const media = pgTable(
+  "media",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    url: text("url").notNull().unique(),
+    /** Storage key used to delete the file. */
+    pathname: text("pathname").notNull(),
+    filename: text("filename").notNull(),
+    mimeType: text("mime_type").notNull(),
+    size: integer("size").notNull(),
+    width: integer("width").notNull(),
+    height: integer("height").notNull(),
+    alt: text("alt").notNull().default(""),
+    uploadedById: uuid("uploaded_by_id").references(() => users.id, { onDelete: "set null" }),
+    ...timestamps,
+  },
+  (t) => [index("media_created_idx").on(t.createdAt)],
+);
+
 /* --------------------------------- Relations -------------------------------- */
 
 export const authorsRelations = relations(authors, ({ many, one }) => ({
@@ -143,3 +165,4 @@ export type UserRole = (typeof userRole.enumValues)[number];
 export type PostRow = typeof posts.$inferSelect;
 export type TagRow = typeof tags.$inferSelect;
 export type AuthorRow = typeof authors.$inferSelect;
+export type MediaRow = typeof media.$inferSelect;

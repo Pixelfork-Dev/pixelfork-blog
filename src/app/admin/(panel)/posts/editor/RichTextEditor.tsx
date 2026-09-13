@@ -13,9 +13,11 @@ interface Props {
   initialHtml: string;
   onChange: (html: string) => void;
   invalid?: boolean;
+  /** Opens the media library; resolves with the chosen image or null. */
+  pickImage: () => Promise<{ url: string; alt: string; width: number; height: number } | null>;
 }
 
-export function RichTextEditor({ initialHtml, onChange, invalid }: Props) {
+export function RichTextEditor({ initialHtml, onChange, invalid, pickImage }: Props) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -41,13 +43,13 @@ export function RichTextEditor({ initialHtml, onChange, invalid }: Props) {
 
   return (
     <div className={`${styles.editorFrame} ${invalid ? styles.invalid : ""}`}>
-      {editor && <Toolbar editor={editor} />}
+      {editor && <Toolbar editor={editor} pickImage={pickImage} />}
       <EditorContent editor={editor} />
     </div>
   );
 }
 
-function Toolbar({ editor }: { editor: Editor }) {
+function Toolbar({ editor, pickImage }: { editor: Editor; pickImage: Props["pickImage"] }) {
   const state = useEditorState({
     editor,
     selector: ({ editor: e }) => ({
@@ -79,11 +81,16 @@ function Toolbar({ editor }: { editor: Editor }) {
     else chain().extendMarkRange("link").setLink({ href: url }).run();
   };
 
-  const addImage = () => {
-    const src = window.prompt("Image URL (https://…)");
-    if (!src) return;
-    const alt = window.prompt("Describe the image (alt text)") ?? "";
-    chain().setImage({ src, alt }).run();
+  const addImage = async () => {
+    const { from } = editor.state.selection;
+    const image = await pickImage();
+    if (!image) return;
+    editor
+      .chain()
+      .focus()
+      .setTextSelection(from)
+      .setImage({ src: image.url, alt: image.alt, width: image.width, height: image.height })
+      .run();
   };
 
   const addVideo = () => {

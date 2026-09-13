@@ -41,11 +41,19 @@ Publishing, updating, unpublishing or deleting a live post refreshes the public 
 appear on the home page, tag pages, sitemap, RSS and their own URL right away. If two people edit the same post, the second save is
 rejected instead of overwriting the first.
 
+## Media & tags
+
+- *Admin → Media:* drag-and-drop uploads (JPEG, PNG, WebP, GIF, AVIF; SVG is rejected). Uploads are checked by their actual
+  content, auto-rotated, limited to 2400px and converted to WebP. Dimensions are stored so pages don't shift while images load.
+  Images still used by a post can't be deleted. Locally, files go to `.data/uploads`; in production they go to Vercel Blob.
+- *Admin → Tags:* create, rename, describe (the description is the tag page's meta description), reorder (the order of the category bar) and delete.
+
 ## Deploying to Vercel
 
 1. **Import the repo:** vercel.com → *Add New → Project* → import `advme/pixelfork-blog` (the default Next.js settings are fine).
 2. **Database:** in the project, *Storage → Create Database → Neon (Postgres)* → connect it to all environments.
    This adds `DATABASE_URL`.
+   **Media storage:** *Storage → Create → Blob* → connect it to the project. This adds `BLOB_READ_WRITE_TOKEN` (uploads in *Admin → Media*).
 3. **Google OAuth client:** Google Cloud Console → *APIs & Services → Credentials → Create credentials → OAuth client ID*
    (*Web application*; set up the consent screen first if prompted).
    - Authorized JavaScript origins: `https://blog.pixelfork.ai`, `http://localhost:3000`
@@ -87,6 +95,6 @@ seed/                  Starter posts and tags imported into an empty database
 
 1. ✅ Foundation: Postgres, Google sign-in, roles, starter content imported
 2. ✅ Posts: rich-text editor (Tiptap), drafts, preview, publish/unpublish, delete, conflict detection, on-demand revalidation
-3. Media library and tag management
+3. ✅ Media library (uploads resized to WebP, alt text, picker in the editor, in-use protection) and tag management
 4. User profiles and public author pages
 5. SEO panel, scheduled publishing, redirects

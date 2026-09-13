@@ -17,7 +17,11 @@ const nextConfig: NextConfig = {
     // Cover images are long-lived; cache optimized variants for 30 days.
     minimumCacheTTL: 60 * 60 * 24 * 30,
     // Google profile pictures in the admin panel.
-    remotePatterns: [{ protocol: "https", hostname: "lh3.googleusercontent.com" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      // Uploaded media (admin → Media) on Vercel Blob.
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+    ],
   },
   async headers() {
     return [

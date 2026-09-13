@@ -24,6 +24,8 @@ export default async function NewPostPage() {
         featured: false,
         coverSrc: "",
         coverAlt: "",
+        coverWidth: null,
+        coverHeight: null,
         seoTitle: "",
         seoDescription: "",
         status: "draft",

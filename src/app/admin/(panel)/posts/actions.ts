@@ -22,6 +22,9 @@ export interface PostInput {
   featured: boolean;
   coverSrc: string;
   coverAlt: string;
+  /** Known when the cover was picked from the media library. */
+  coverWidth?: number | null;
+  coverHeight?: number | null;
   seoTitle: string;
   seoDescription: string;
 }
@@ -50,6 +53,8 @@ const baseSchema = z.object({
     .trim()
     .refine((v) => v === "" || v.startsWith("/") || /^https:\/\//.test(v), "Use an https:// URL or a site path like /images/…"),
   coverAlt: z.string().trim().max(200),
+  coverWidth: z.number().int().positive().max(20000).nullish(),
+  coverHeight: z.number().int().positive().max(20000).nullish(),
   seoTitle: z.string().trim().max(80, "Search titles get cut off after ~60 characters."),
   seoDescription: z.string().trim().max(200, "Meta descriptions get cut off after ~160 characters."),
 });
@@ -121,8 +126,8 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
       featured: data.featured,
       coverSrc: data.coverSrc || null,
       coverAlt: data.coverSrc ? data.coverAlt : null,
-      coverWidth: data.coverSrc && data.coverSrc === existing?.coverSrc ? existing.coverWidth : null,
-      coverHeight: data.coverSrc && data.coverSrc === existing?.coverSrc ? existing.coverHeight : null,
+      coverWidth: data.coverSrc ? (data.coverWidth ?? (data.coverSrc === existing?.coverSrc ? existing.coverWidth : null)) : null,
+      coverHeight: data.coverSrc ? (data.coverHeight ?? (data.coverSrc === existing?.coverSrc ? existing.coverHeight : null)) : null,
       seoTitle: data.seoTitle || null,
       seoDescription: data.seoDescription || null,
       authorId: data.authorId,

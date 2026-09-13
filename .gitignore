@@ -52,3 +52,6 @@ next-env.d.ts
 
 # local database (PGlite)
 /.data/
+
+# local media uploads (production uses Vercel Blob)
+/public/uploads/

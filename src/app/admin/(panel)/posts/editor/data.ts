@@ -31,6 +31,8 @@ export async function loadEditorPost(id: string): Promise<EditorPost | null> {
     featured: row.featured,
     coverSrc: row.coverSrc ?? "",
     coverAlt: row.coverAlt ?? "",
+    coverWidth: row.coverWidth,
+    coverHeight: row.coverHeight,
     seoTitle: row.seoTitle ?? "",
     seoDescription: row.seoDescription ?? "",
     status: row.status,

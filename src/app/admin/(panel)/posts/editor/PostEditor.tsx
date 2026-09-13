@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { siteConfig } from "@/config/site";
 import { slugify } from "@/lib/slug";
+import type { MediaItem } from "../../media/actions";
+import { MediaPicker } from "../../media/MediaPicker";
 import { deletePost, savePost, type PostInput, type SaveIntent, type SaveResult } from "../actions";
 import { RichTextEditor } from "./RichTextEditor";
 import ui from "../../../admin.module.css";
@@ -39,6 +41,29 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
   });
   const [pending, startTransition] = useTransition();
   const [pendingIntent, setPendingIntent] = useState<SaveIntent | "delete" | null>(null);
+  // One picker for both the cover and in-article images; `resolvePick` receives the chosen image.
+  const [picker, setPicker] = useState<{ title: string; resolve: (item: MediaItem | null) => void } | null>(null);
+  const pickImage = useCallback(
+    (title: string) => new Promise<MediaItem | null>((resolve) => setPicker({ title, resolve })),
+    [],
+  );
+  const closePicker = (item: MediaItem | null) => {
+    picker?.resolve(item);
+    setPicker(null);
+  };
+
+  const chooseCover = async () => {
+    const item = await pickImage("Choose a cover image");
+    if (!item) return;
+    // A different image needs its own description: take the library's alt text (validation asks for one if it's empty).
+    setPost((p) => ({
+      ...p,
+      coverSrc: item.url,
+      coverAlt: item.url === p.coverSrc ? p.coverAlt || item.alt : item.alt,
+      coverWidth: item.width,
+      coverHeight: item.height,
+    }));
+  };
 
   const isLive = post.status !== "draft";
   const dirty = useMemo(() => JSON.stringify(toInput(post)) !== JSON.stringify(toInput(saved)), [post, saved]);
@@ -150,7 +175,12 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
         />
         {errors.title && <FieldError>{errors.title}</FieldError>}
 
-        <RichTextEditor initialHtml={initial.content} onChange={(html) => update("content", html)} invalid={Boolean(errors.content)} />
+        <RichTextEditor
+          initialHtml={initial.content}
+          onChange={(html) => update("content", html)}
+          invalid={Boolean(errors.content)}
+          pickImage={() => pickImage("Insert an image")}
+        />
         {errors.content && <FieldError>{errors.content}</FieldError>}
       </div>
 
@@ -277,6 +307,20 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={post.coverSrc} alt="" className={styles.coverPreview} />
           )}
+          <div className={styles.actions}>
+            <button type="button" className={ui.buttonGhost} onClick={chooseCover}>
+              {post.coverSrc ? "Replace image" : "Choose image"}
+            </button>
+            {post.coverSrc && (
+              <button
+                type="button"
+                className={ui.buttonGhost}
+                onClick={() => setPost((p) => ({ ...p, coverSrc: "", coverAlt: "", coverWidth: null, coverHeight: null }))}
+              >
+                Remove
+              </button>
+            )}
+          </div>
           <label className={styles.label} htmlFor="post-cover">
             Image URL
           </label>
@@ -284,9 +328,9 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
             id="post-cover"
             className={`${ui.input} ${styles.full}`}
             value={post.coverSrc}
-            placeholder="https://… or /images/…"
+            placeholder="Choose from the library, or paste https://…"
             aria-invalid={Boolean(errors.coverSrc)}
-            onChange={(e) => update("coverSrc", e.target.value)}
+            onChange={(e) => setPost((p) => ({ ...p, coverSrc: e.target.value, coverWidth: null, coverHeight: null }))}
           />
           {errors.coverSrc && <FieldError>{errors.coverSrc}</FieldError>}
           <label className={styles.label} htmlFor="post-cover-alt">
@@ -340,6 +384,8 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
           {errors.seoDescription && <FieldError>{errors.seoDescription}</FieldError>}
         </Panel>
 
+        <MediaPicker open={Boolean(picker)} title={picker?.title} onSelect={(item) => closePicker(item)} onClose={() => closePicker(null)} />
+
         {post.id && (
           <button type="button" className={`${ui.buttonDanger} ${styles.delete}`} disabled={pending} onClick={remove}>
             {pendingIntent === "delete" ? "Deleting…" : "Delete post"}
@@ -363,6 +409,8 @@ function toInput(p: EditorPost): PostInput {
     featured: p.featured,
     coverSrc: p.coverSrc,
     coverAlt: p.coverAlt,
+    coverWidth: p.coverWidth,
+    coverHeight: p.coverHeight,
     seoTitle: p.seoTitle,
     seoDescription: p.seoDescription,
   };
