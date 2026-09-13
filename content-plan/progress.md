@@ -1,32 +1,45 @@
-# Priority 1 articles — progress
+# Article queue
 
-Paused 2026-09-13 to deploy the blog. Resume from here.
+Worked top to bottom by the scheduled automation (see `content-plan/automation.md`).
+Status: `todo` → `draft` (sent to the blog, waiting for review) → `published` (set manually once live).
 
-## How the system works
-- Each article is a package: `content/posts/<slug>/post.mts` (+ `cover.webp`). Type: `content/posts/types.ts`.
-- Infographic helpers: `scripts/lib/graphics.mts` (frame, flow, cards, table, bars, cycle, placeholderSvg).
-- Preview infographics: `npm run post:preview -- <slug> [outDir]`
-- Publish to the DB: `npm run post:publish -- <slug> | --all [--draft] [--replace]`
-- Covers: generated in the ChatGPT app (Work mode, project "Game Prompt and Visuals"), style block in the chat "Generate 12 blog cover images". Originals in `../Images X/covers/`.
+## Done / in review
+| Slug | Status | Notes |
+|---|---|---|
+| how-to-monetize-hypercasual-mobile-games | draft | 6 screenshot placeholders (ad network screens) |
+| how-to-make-a-roblox-game | draft | 3 Roblox Studio screenshot placeholders |
+| what-is-an-npc | draft | ready to publish |
+| how-to-make-a-video-game | draft | ready to publish |
+| game-design-document-template | draft | ready to publish |
+| (11 starter posts) | published | new Nano Banana 2 covers applied 2026-09-13 |
 
-## Status
-| # | Slug | Cover | Written | Published |
-|---|---|---|---|---|
-| 1 | how-to-make-a-roblox-game | ✅ | ✅ (3 Roblox Studio screenshot placeholders — capture from RobloxStudio app) | ❌ |
-| 2 | what-is-an-npc | ✅ | ✅ | ❌ |
-| 3 | how-to-make-a-video-game | ✅ | ✅ | ❌ |
-| 4 | game-design-document-template | ✅ | ✅ | ❌ |
-| 5 | pixel-art-for-games | ✅ | ❌ | ❌ |
-| 6 | godot-vs-unity | ✅ | ❌ | ❌ |
-| 7 | unity-vs-unreal | ✅ | ❌ | ❌ |
-| 8 | how-to-make-a-mobile-game | ✅ | ❌ | ❌ |
-| 9 | best-game-engine-for-beginners | ✅ | ❌ | ❌ |
-| 10 | how-to-make-a-game-with-ai | ✅ | ❌ | ❌ |
-| 11 | procedural-generation | ✅ | ❌ | ❌ |
-| 12 | game-testing | ✅ | ❌ | ❌ |
+## Queue — Priority 1 (covers already in `content/posts/<slug>/cover.webp`)
+| # | Slug | Target keyword | Status |
+|---|---|---|---|
+| 5 | pixel-art-for-games | pixel art for games | todo |
+| 6 | godot-vs-unity | godot vs unity | todo |
+| 7 | unity-vs-unreal | unity vs unreal | todo |
+| 8 | how-to-make-a-mobile-game | how to make a mobile game | todo |
+| 9 | best-game-engine-for-beginners | best game engine for beginners | todo |
+| 10 | how-to-make-a-game-with-ai | how to make a game with ai | todo |
+| 11 | procedural-generation | procedural generation | todo |
+| 12 | game-testing | game testing | todo |
 
-## Next steps
-1. Write posts 5–12 (written posts already link to `/posts/game-testing`, `/posts/best-game-engine-for-beginners`, `/posts/how-to-make-a-game-with-ai`, `/posts/pixel-art-for-games`, `/posts/how-to-make-a-mobile-game` — keep those slugs).
-2. Preview all infographics, fix layout issues.
-3. Capture real screenshots (Roblox Studio, Unity Hub, GDevelop are installed) to replace placeholders.
-4. `npm run post:publish -- --all` locally, check in the browser, then run against production DB.
+## Queue — Priority 2 (covers generated during the run)
+| # | Slug | Target keyword | Status |
+|---|---|---|---|
+| 13 | microtransactions-in-games | microtransactions | todo |
+| 14 | how-to-make-an-endless-runner-game | endless runner game | todo |
+| 15 | how-to-make-money-making-games | how to make money from games | todo |
+| 16 | mobile-game-advertising | mobile game advertising | todo |
+| 17 | game-art-styles | game art style | todo |
+| 18 | how-to-make-a-3d-game | how to make a 3d game | todo |
+| 19 | how-to-make-a-2d-game | how to make a 2d game | todo |
+| 20 | how-to-make-an-rpg-game | how to make an rpg game | todo |
+| 21 | how-to-make-a-horror-game | how to make a horror game | todo |
+| 22 | ai-sprite-sheet-generators | sprite sheet generator | todo |
+| 23 | global-game-jam-and-gmtk-game-jam-guide | global game jam | todo |
+| 24 | game-idea-generator | video game idea generator | todo |
+
+Links already pointing at planned slugs (keep these slugs): game-testing, best-game-engine-for-beginners,
+how-to-make-a-game-with-ai, pixel-art-for-games, how-to-make-a-mobile-game.

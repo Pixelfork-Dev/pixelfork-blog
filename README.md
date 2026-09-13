@@ -97,7 +97,7 @@ Every page, asset, API route and auth callback lives under `/blog`, so the main 
    Optional: *Project Settings → Database → SSL Configuration → Download certificate* and paste it into `DATABASE_CA_CERT`
    to verify the server certificate (without it the connection is encrypted but not verified).
 2. **Vercel project:** in the same team as pixelfork.ai → *Add New → Project* → import `advme/pixelfork-blog` (defaults are fine).
-   *Storage → Create → Blob* → connect it to the project (adds `BLOB_READ_WRITE_TOKEN`).
+   *Storage → Create → Blob* (Public access) → connect it to the project (adds `BLOB_STORE_ID`, or `BLOB_READ_WRITE_TOKEN` for older stores).
 3. **Environment variables** (Vercel → *Settings → Environment Variables*, Production):
 
    | Variable | Value |
