@@ -1,2 +1,13 @@
 date,slug,model,prompt_tokens,image_tokens,est_cost_usd
 2026-09-13T15:13:45.999Z,microtransactions-in-games,gemini-3.1-flash-image,794,1680,0.1012
+2026-09-13T15:23:39.179Z,exploring-unity-game-engine-beginners-guide,gemini-3.1-flash-image,813,1680,0.1012
+2026-09-13T15:24:03.624Z,monetization-strategies-for-indie-mobile-games,gemini-3.1-flash-image,811,1680,0.1012
+2026-09-13T15:24:18.726Z,build-your-first-threejs-browser-game,gemini-3.1-flash-image,820,1680,0.1012
+2026-09-13T15:24:35.973Z,2d-game-art-pipeline-pro-tips,gemini-3.1-flash-image,810,1680,0.1012
+2026-09-13T15:24:54.251Z,publish-your-game-on-itch-io-and-steam,gemini-3.1-flash-image,796,1680,0.1012
+2026-09-13T15:25:08.937Z,game-jam-survival-guide,gemini-3.1-flash-image,809,1680,0.1012
+2026-09-13T15:25:26.463Z,optimize-mobile-game-performance,gemini-3.1-flash-image,811,1680,0.1012
+2026-09-13T15:25:44.537Z,3d-level-design-that-guides-players,gemini-3.1-flash-image,803,1680,0.1012
+2026-09-13T15:26:02.053Z,ad-mediation-explained,gemini-3.1-flash-image,806,1680,0.1012
+2026-09-13T15:26:21.098Z,build-a-2d-platformer-character-controller,gemini-3.1-flash-image,811,1680,0.1012
+2026-09-13T15:26:42.810Z,market-your-indie-game-before-launch,gemini-3.1-flash-image,807,1680,0.1012

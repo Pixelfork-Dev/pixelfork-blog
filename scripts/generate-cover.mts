@@ -22,7 +22,7 @@ const REFERENCES = ["content/posts/how-to-make-a-video-game/cover.webp", "conten
 const STYLE = `Style: stylized 3D game-art illustration, miniature low-poly diorama, smooth shapes with soft rounded edges, matte materials, soft studio lighting with a warm orange rim light, subtle depth of field.
 Palette: deep charcoal background (#1c1c1c) with soft gradients, Pixelfork orange (#F26207) as the main accent, muted teal (#3a6f7a) as secondary, off-white highlights, muted natural greens allowed.
 Mood: optimistic, crafted, calm "game developer's workshop".
-Rules: no text, no letters, no numbers, no logos, no watermarks, no UI text, no real brand marks, no people's faces, no borders or frames, no clutter, not photorealistic.
+Rules: no text, no letters, no numbers, no symbols or icons printed on objects (coins, flags and signs stay blank), no logos, no watermarks, no UI text, no real brand marks, no people's faces, no borders or frames, no clutter, not photorealistic.
 Composition: wide 16:9 banner, subject centered and filling about 60% of the frame, generous safe empty margin on all sides, three-quarter view from slightly above.`;
 
 const args = process.argv.slice(2);

@@ -1,0 +1,46 @@
+{
+  "exploring-unity-game-engine-beginners-guide": {
+    "subject": "a small floating island with a stone tower under construction, built from glowing orange cube blocks assembling in mid-air, a tiny game character at the base looking up, a few translucent editor-like panels floating nearby with only abstract shapes",
+    "alt": "Illustration of a tower being built from glowing blocks on a floating island, representing building a first game in Unity"
+  },
+  "monetization-strategies-for-indie-mobile-games": {
+    "subject": "a smartphone lying flat as a stage with a tiny cozy game world on its screen, three small paths leading from it to a treasure chest, a little shop stall and a glowing video screen, blank orange coins floating gently above",
+    "alt": "Illustration of a tiny game world on a smartphone with paths to a treasure chest, a shop and a video screen, representing mobile game monetization options"
+  },
+  "build-your-first-threejs-browser-game": {
+    "subject": "an open laptop on a workbench with a small 3D low-poly world rising out of its screen: a winding road, a little car and floating geometric shapes (a cube, a sphere, a torus) connected by thin glowing orange lines like a wireframe",
+    "alt": "Illustration of a small 3D world rising out of a laptop screen with floating geometric shapes, representing a browser game built with Three.js"
+  },
+  "2d-game-art-pipeline-pro-tips": {
+    "subject": "a conveyor belt on a workbench carrying a flat paper sketch of a character that turns step by step into a colored flat 2D sprite and finally a row of animation frames, small brushes and color swatches beside it",
+    "alt": "Illustration of a conveyor belt turning a character sketch into colored sprites and animation frames, representing a 2D game art pipeline"
+  },
+  "publish-your-game-on-itch-io-and-steam": {
+    "subject": "a small wooden rocket shaped like a game cartridge launching from a workbench launch pad, trailing orange sparks, heading toward two floating islands with blank storefront stalls",
+    "alt": "Illustration of a game cartridge rocket launching toward two storefront islands, representing publishing a game on digital stores"
+  },
+  "game-jam-survival-guide": {
+    "subject": "a cozy late-night game jam desk diorama: a laptop showing an abstract tiny level, a large hourglass with glowing orange sand, empty coffee cups, sticky notes without writing, and a small character stretching happily",
+    "alt": "Illustration of a cozy game jam desk with a laptop, a glowing hourglass and coffee cups, representing finishing a game in 48 hours"
+  },
+  "optimize-mobile-game-performance": {
+    "subject": "a smartphone on a mechanic's workbench being tuned like an engine by a tiny character with a wrench, small gears and a speedometer gauge floating above it with the needle in the orange zone, a few light particles showing speed",
+    "alt": "Illustration of a character tuning a smartphone like an engine with gears and a speed gauge, representing mobile game performance optimization"
+  },
+  "3d-level-design-that-guides-players": {
+    "subject": "a miniature valley level with a winding path, glowing orange lanterns placed along the route leading toward a distant lit tower, a small character following the lights, rocks and trees framing the path",
+    "alt": "Illustration of a miniature valley where glowing lanterns guide a small character toward a tower, representing level design that guides players"
+  },
+  "ad-mediation-explained": {
+    "subject": "a small auction-house diorama where several friendly little robot bidders stand at podiums raising blank orange paddles toward a glowing video screen in the center, a tiny judge's gavel on a pedestal",
+    "alt": "Illustration of little robot bidders raising paddles toward a video screen, representing ad networks competing in ad mediation"
+  },
+  "build-a-2d-platformer-character-controller": {
+    "subject": "a side-view platformer diorama with floating grass platforms, a small character mid-jump with a dotted orange arc showing the jump path, a moving platform and a spring pad, subtle grid lines on a back wall",
+    "alt": "Illustration of a character jumping between floating platforms along a dotted arc, representing a 2D platformer character controller"
+  },
+  "market-your-indie-game-before-launch": {
+    "subject": "a tiny game studio booth on a floating island with a megaphone speaker on a pole, paper airplanes flying out toward small floating crowds of little characters, a blank banner and a glowing launch button on a pedestal",
+    "alt": "Illustration of a tiny game studio booth sending paper airplanes to small crowds, representing marketing an indie game before launch"
+  }
+}
