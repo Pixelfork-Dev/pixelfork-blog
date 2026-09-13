@@ -89,6 +89,12 @@ export const posts = pgTable(
     coverHeight: integer("cover_height"),
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
+    /** Main search phrase the post targets (drives the editor's SEO checklist). */
+    focusKeyword: text("focus_keyword"),
+    /** Set when the article was first published elsewhere. */
+    canonicalUrl: text("canonical_url"),
+    /** Keep this post out of search results and the sitemap. */
+    noindex: boolean("noindex").notNull().default(false),
     authorId: uuid("author_id")
       .notNull()
       .references(() => authors.id, { onDelete: "restrict" }),
@@ -114,6 +120,20 @@ export const postTags = pgTable(
   },
   (t) => [primaryKey({ columns: [t.postId, t.tagId] }), index("post_tags_tag_idx").on(t.tagId)],
 );
+
+/* --------------------------------- Redirects -------------------------------- */
+
+/** Permanent redirects for changed URLs. Created automatically when a live slug changes, or manually in the admin. */
+export const redirects = pgTable("redirects", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  fromPath: text("from_path").notNull().unique(),
+  /** A site path ("/posts/new-slug") or an absolute https URL. */
+  toPath: text("to_path").notNull(),
+  source: text("source", { enum: ["auto", "manual"] }).notNull().default("manual"),
+  hits: integer("hits").notNull().default(0),
+  lastHitAt: timestamp("last_hit_at", { withTimezone: true }),
+  ...timestamps,
+});
 
 /* ----------------------------------- Media ---------------------------------- */
 
@@ -168,3 +188,4 @@ export type PostRow = typeof posts.$inferSelect;
 export type TagRow = typeof tags.$inferSelect;
 export type AuthorRow = typeof authors.$inferSelect;
 export type MediaRow = typeof media.$inferSelect;
+export type RedirectRow = typeof redirects.$inferSelect;

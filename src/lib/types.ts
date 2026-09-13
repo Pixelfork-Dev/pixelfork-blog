@@ -42,6 +42,10 @@ export interface PostSummary {
   /** Optional overrides for the <title> and meta description. */
   seoTitle?: string;
   seoDescription?: string;
+  /** Original URL when the article was first published elsewhere. */
+  canonicalUrl?: string;
+  /** Hidden from search engines and the sitemap. */
+  noindex: boolean;
 }
 
 export interface TocItem {

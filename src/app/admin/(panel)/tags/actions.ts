@@ -3,6 +3,7 @@
 import { and, asc, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
+import { recordMove, releasePath } from "@/lib/admin/redirects";
 import { revalidatePublicSite } from "@/lib/admin/revalidate";
 import { assertRole, AuthorizationError } from "@/lib/auth/dal";
 import { slugify } from "@/lib/slug";
@@ -56,6 +57,7 @@ export async function createTag(input: { name: string; slug: string; description
     }
     const last = await db.query.tags.findFirst({ orderBy: (t, { desc }) => [desc(t.sortOrder)] });
     await db.insert(schema.tags).values({ ...data, sortOrder: (last?.sortOrder ?? -1) + 1 });
+    await releasePath(`/tag/${data.slug}`);
     return { ok: true, message: `Tag “${data.name}” created.` };
   });
 }
@@ -67,7 +69,12 @@ export async function updateTag(id: string, input: { name: string; slug: string;
     if (error) return error;
     const clash = await db.query.tags.findFirst({ where: and(eq(schema.tags.slug, data.slug), ne(schema.tags.id, tagId)) });
     if (clash) return { ok: false, message: "Please fix the highlighted fields.", fieldErrors: { slug: "Another tag already uses this slug." } };
+    const before = await db.query.tags.findFirst({ columns: { slug: true }, where: eq(schema.tags.id, tagId) });
     await db.update(schema.tags).set(data).where(eq(schema.tags.id, tagId));
+    if (before && before.slug !== data.slug) {
+      await recordMove(`/tag/${before.slug}`, `/tag/${data.slug}`);
+      return { ok: true, message: `Tag saved. /tag/${before.slug} now redirects to /tag/${data.slug}.` };
+    }
     return { ok: true, message: "Tag saved." };
   });
 }

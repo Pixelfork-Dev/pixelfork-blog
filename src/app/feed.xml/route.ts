@@ -2,6 +2,8 @@ import { absoluteUrl, siteConfig } from "@/config/site";
 import { getAllPosts } from "@/lib/posts";
 
 export const dynamic = "force-static";
+// Also refreshed on publish; the interval makes scheduled posts appear on time.
+export const revalidate = 600;
 
 function escapeXml(value: string) {
   return value.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[c]!);

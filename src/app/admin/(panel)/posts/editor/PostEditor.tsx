@@ -9,6 +9,7 @@ import type { MediaItem } from "../../media/actions";
 import { MediaPicker } from "../../media/MediaPicker";
 import { deletePost, savePost, type PostInput, type SaveIntent, type SaveResult } from "../actions";
 import { RichTextEditor } from "./RichTextEditor";
+import { runSeoChecks, seoScore } from "./seoChecks";
 import ui from "../../../admin.module.css";
 import styles from "./editor.module.css";
 
@@ -37,6 +38,7 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
     const notice = searchParams.get("notice");
     if (notice === "published") return { ok: true, message: "Post published — it’s live now." };
     if (notice === "draft") return { ok: true, message: "Draft saved." };
+    if (notice === "scheduled") return { ok: true, message: "Post scheduled." };
     return null;
   });
   const [pending, startTransition] = useTransition();
@@ -65,7 +67,14 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
     }));
   };
 
-  const isLive = post.status !== "draft";
+  // Captured once per editor session; good enough to tell scheduled from live and to set the picker minimum.
+  const [now] = useState(() => Date.now());
+  const isScheduled = post.status === "scheduled" && Boolean(post.publishedAt && new Date(post.publishedAt).getTime() > now);
+  const isLive = post.status !== "draft" && !isScheduled;
+  const [publishAt, setPublishAt] = useState(() => toLocalInput(isScheduled ? post.publishedAt : null));
+  const [showSchedule, setShowSchedule] = useState(false);
+  const seoChecks = useMemo(() => runSeoChecks(post), [post]);
+  const score = seoScore(seoChecks);
   const dirty = useMemo(() => JSON.stringify(toInput(post)) !== JSON.stringify(toInput(saved)), [post, saved]);
   const errors = result?.fieldErrors ?? {};
 
@@ -81,7 +90,14 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
       if (pending) return;
       setPendingIntent(intent);
       startTransition(async () => {
-        const res = await savePost({ ...toInput(post), loadedUpdatedAt: post.updatedAt ?? undefined }, intent);
+        const res = await savePost(
+          {
+            ...toInput(post),
+            loadedUpdatedAt: post.updatedAt ?? undefined,
+            publishAt: intent === "schedule" && publishAt ? new Date(publishAt).toISOString() : null,
+          },
+          intent,
+        );
         setResult(res);
         setPendingIntent(null);
         if (res.ok && res.post) {
@@ -89,12 +105,13 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
           setPost(next);
           setSaved(next);
           setSlugTouched(true);
-          if (!post.id) router.replace(`/admin/posts/${res.post.id}?notice=${res.post.status === "draft" ? "draft" : "published"}`);
+          setShowSchedule(false);
+          if (!post.id) router.replace(`/admin/posts/${res.post.id}?notice=${res.post.status}`);
           else router.refresh();
         }
       });
     },
-    [pending, post, router],
+    [pending, post, publishAt, router],
   );
 
   const remove = () => {
@@ -187,12 +204,10 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
       <aside className={styles.sidebar} aria-label="Post settings">
         <Panel title="Publish">
           <div className={styles.statusRow}>
-            <span className={`${ui.badge} ${isLive ? ui.badgePublished : ui.badgeDraft}`}>{isLive ? "published" : "draft"}</span>
-            {post.publishedAt && isLive && (
-              <span className={ui.muted}>
-                {new Date(post.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-              </span>
-            )}
+            <span className={`${ui.badge} ${isLive ? ui.badgePublished : isScheduled ? ui.badgeScheduled : ui.badgeDraft}`}>
+              {isLive ? "published" : isScheduled ? "scheduled" : "draft"}
+            </span>
+            {post.publishedAt && post.status !== "draft" && <span className={ui.muted}>{formatWhen(post.publishedAt)}</span>}
           </div>
           <div className={styles.actions}>
             {isLive ? (
@@ -210,17 +225,47 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
             ) : (
               <>
                 <button type="button" className={ui.button} disabled={pending} onClick={() => run("publish")}>
-                  {pendingIntent === "publish" ? "Publishing…" : "Publish"}
+                  {pendingIntent === "publish" ? "Publishing…" : isScheduled ? "Publish now" : "Publish"}
                 </button>
                 <button type="button" className={ui.buttonGhost} disabled={pending} onClick={() => run("save")}>
-                  {pendingIntent === "save" ? "Saving…" : "Save draft"}
+                  {pendingIntent === "save" ? "Saving…" : isScheduled ? "Save" : "Save draft"}
+                </button>
+                <button type="button" className={ui.buttonGhost} disabled={pending} onClick={() => setShowSchedule((v) => !v)} aria-expanded={showSchedule}>
+                  {isScheduled ? "Reschedule" : "Schedule…"}
                 </button>
                 <button type="button" className={ui.buttonGhost} disabled={!post.id || dirty} onClick={openPreview} title={dirty ? "Save first to preview" : undefined}>
                   Preview
                 </button>
+                {isScheduled && (
+                  <button type="button" className={ui.buttonGhost} disabled={pending} onClick={() => run("unpublish")}>
+                    Unschedule
+                  </button>
+                )}
               </>
             )}
           </div>
+          {showSchedule && !isLive && (
+            <div className={styles.schedule}>
+              <label className={styles.label} htmlFor="post-publish-at">
+                Publish on <span className={ui.muted}>(your local time)</span>
+              </label>
+              <div className={ui.inlineForm}>
+                <input
+                  id="post-publish-at"
+                  type="datetime-local"
+                  className={ui.input}
+                  value={publishAt}
+                  min={toLocalInput(new Date(now + 5 * 60_000).toISOString())}
+                  onChange={(e) => setPublishAt(e.target.value)}
+                />
+                <button type="button" className={ui.button} disabled={pending || !publishAt} onClick={() => run("schedule")}>
+                  {pendingIntent === "schedule" ? "Scheduling…" : "Schedule"}
+                </button>
+              </div>
+              {errors.publishAt && <FieldError>{errors.publishAt}</FieldError>}
+              <p className={`${ui.muted} ${styles.hint}`}>The post goes live within about 10 minutes of this time.</p>
+            </div>
+          )}
           {isLive && <p className={`${ui.muted} ${styles.hint}`}>Updates go live immediately.</p>}
         </Panel>
 
@@ -347,13 +392,56 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
           {errors.coverAlt && <FieldError>{errors.coverAlt}</FieldError>}
         </Panel>
 
-        <Panel title="Search & social">
+        <Panel title="SEO">
+          <label className={styles.label} htmlFor="post-keyword">
+            Focus keyword
+          </label>
+          <input
+            id="post-keyword"
+            className={`${ui.input} ${styles.full}`}
+            value={post.focusKeyword}
+            placeholder="e.g. unity beginner guide"
+            aria-invalid={Boolean(errors.focusKeyword)}
+            onChange={(e) => update("focusKeyword", e.target.value)}
+          />
+          {errors.focusKeyword && <FieldError>{errors.focusKeyword}</FieldError>}
+
+          <div className={`${styles.score} ${styles[`score_${score.tone}`]}`} role="status">
+            SEO: {score.label}
+          </div>
+          <ul className={styles.checks} aria-label="SEO checklist">
+            {seoChecks.map((c) => (
+              <li key={c.id} className={styles[`check_${c.status}`]}>
+                <span aria-hidden="true">{c.status === "good" ? "✓" : c.status === "warn" ? "!" : "✕"}</span>
+                <div>
+                  {c.label}
+                  {c.tip && <p className={styles.checkTip}>{c.tip}</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+
+        <Panel title="Search & social preview">
           <div className={styles.serp} aria-label="Google result preview">
             <span className={styles.serpUrl}>
               {host} › posts › {post.slug || "…"}
             </span>
             <span className={styles.serpTitle}>{truncate(searchTitle, 62)}</span>
             <span className={styles.serpDesc}>{truncate(searchDescription, 160)}</span>
+          </div>
+          <div className={styles.social} aria-label="Social share preview">
+            {post.coverSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={post.coverSrc} alt="" />
+            ) : (
+              <div className={styles.socialPlaceholder}>Generated card</div>
+            )}
+            <div className={styles.socialText}>
+              <span className={styles.socialHost}>{host.toUpperCase()}</span>
+              <span className={styles.socialTitle}>{truncate(post.seoTitle || post.title || "Untitled", 70)}</span>
+              <span className={styles.socialDesc}>{truncate(searchDescription, 100)}</span>
+            </div>
           </div>
           <label className={styles.label} htmlFor="post-seo-title">
             SEO title <span className={ui.muted}>(optional)</span>
@@ -382,6 +470,25 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
           />
           <Counter value={post.seoDescription || post.excerpt} range={COUNTS.seoDescription} />
           {errors.seoDescription && <FieldError>{errors.seoDescription}</FieldError>}
+        </Panel>
+
+        <Panel title="Advanced">
+          <label className={styles.checkbox}>
+            <input type="checkbox" checked={post.noindex} onChange={(e) => update("noindex", e.target.checked)} />
+            Hide from search engines (noindex)
+          </label>
+          <label className={styles.label} htmlFor="post-canonical">
+            Canonical URL <span className={ui.muted}>(only if first published elsewhere)</span>
+          </label>
+          <input
+            id="post-canonical"
+            className={`${ui.input} ${styles.full}`}
+            value={post.canonicalUrl}
+            placeholder="https://original-site.com/article"
+            aria-invalid={Boolean(errors.canonicalUrl)}
+            onChange={(e) => update("canonicalUrl", e.target.value)}
+          />
+          {errors.canonicalUrl && <FieldError>{errors.canonicalUrl}</FieldError>}
         </Panel>
 
         <MediaPicker open={Boolean(picker)} title={picker?.title} onSelect={(item) => closePicker(item)} onClose={() => closePicker(null)} />
@@ -413,7 +520,22 @@ function toInput(p: EditorPost): PostInput {
     coverHeight: p.coverHeight,
     seoTitle: p.seoTitle,
     seoDescription: p.seoDescription,
+    focusKeyword: p.focusKeyword,
+    canonicalUrl: p.canonicalUrl,
+    noindex: p.noindex,
   };
+}
+
+/** ISO → value for <input type="datetime-local"> in the browser's timezone. */
+function toLocalInput(iso: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function formatWhen(iso: string) {
+  return new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 function truncate(text: string, max: number) {

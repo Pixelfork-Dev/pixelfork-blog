@@ -84,6 +84,8 @@ function toRaw(row: PostWithRelations) {
     featured: row.featured,
     seoTitle: row.seoTitle ?? undefined,
     seoDescription: row.seoDescription ?? undefined,
+    canonicalUrl: row.canonicalUrl ?? undefined,
+    noindex: row.noindex,
   };
   return { summary, content: row.content, format: row.contentFormat, wordCount };
 }

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { ArticleView } from "@/components/Article/ArticleView";
 import { JsonLd } from "@/components/JsonLd";
 import { getAllPosts, getPostBySlug, getRelatedPosts } from "@/lib/posts";
-import { buildPostMetadata, postJsonLd } from "@/lib/seo";
+import { redirectOrNotFound } from "@/lib/redirects";
+import { buildPostMetadata, notFoundMetadata, postJsonLd } from "@/lib/seo";
 
 // Posts published after the build render on first request, then stay cached until the admin publishes a change.
 export const dynamicParams = true;
@@ -14,12 +14,13 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/posts/[slug]">): Promise<Metadata> {
   const post = await getPostBySlug((await params).slug);
-  return post ? buildPostMetadata(post) : {};
+  return post ? buildPostMetadata(post) : notFoundMetadata;
 }
 
 export default async function PostPage({ params }: PageProps<"/posts/[slug]">) {
-  const post = await getPostBySlug((await params).slug);
-  if (!post) notFound();
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+  if (!post) return redirectOrNotFound(`/posts/${slug}`);
   const related = await getRelatedPosts(post);
 
   return (

@@ -10,6 +10,7 @@ const items = [
   { href: "/admin/media", label: "Media" },
   { href: "/admin/tags", label: "Tags" },
   { href: "/admin/authors", label: "Authors" },
+  { href: "/admin/redirects", label: "Redirects" },
   { href: "/admin/users", label: "Users", adminOnly: true },
 ];
 

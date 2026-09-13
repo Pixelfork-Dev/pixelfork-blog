@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { count, desc, eq, isNull } from "drizzle-orm";
+import { count, desc, eq, isNull, ne } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { requireUser } from "@/lib/auth/dal";
 import { formatDate } from "@/lib/format";
@@ -31,6 +31,39 @@ export default async function DashboardPage() {
       .orderBy(desc(schema.posts.updatedAt))
       .limit(6),
   ]);
+
+  // SEO health: live posts with fixable problems, worst first.
+  const livePosts = await db
+    .select({
+      id: schema.posts.id,
+      title: schema.posts.title,
+      excerpt: schema.posts.excerpt,
+      seoDescription: schema.posts.seoDescription,
+      coverSrc: schema.posts.coverSrc,
+      coverAlt: schema.posts.coverAlt,
+      content: schema.posts.content,
+      noindex: schema.posts.noindex,
+      focusKeyword: schema.posts.focusKeyword,
+    })
+    .from(schema.posts)
+    .where(ne(schema.posts.status, "draft"));
+  const seoIssues = livePosts
+    .map((p) => {
+      const issues: string[] = [];
+      const description = p.seoDescription || p.excerpt;
+      const words = p.content.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+      if (p.noindex) issues.push("hidden from search");
+      if (description.length < 120) issues.push("short description");
+      if (!p.coverSrc) issues.push("no cover");
+      else if (!p.coverAlt) issues.push("cover without alt text");
+      if (/<img(?![^>]*\balt="[^"]+")[^>]*>/i.test(p.content)) issues.push("images without alt text");
+      if (words < 300) issues.push(`only ${words} words`);
+      if (!p.focusKeyword) issues.push("no focus keyword");
+      return { ...p, issues };
+    })
+    .filter((p) => p.issues.length > 0)
+    .sort((a, b) => b.issues.length - a.issues.length)
+    .slice(0, 8);
 
   const statusCount = (s: string) => byStatus.find((r) => r.status === s)?.value ?? 0;
   const stats = [
@@ -67,6 +100,38 @@ export default async function DashboardPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className={ui.section} aria-labelledby="seo-heading">
+        <h2 id="seo-heading" className={ui.sectionTitle}>
+          SEO health
+        </h2>
+        {seoIssues.length === 0 ? (
+          <p className={`${ui.notice} ${ui.noticeOk}`}>All published posts pass the basic SEO checks.</p>
+        ) : (
+          <div className={ui.tableWrap}>
+            <table className={ui.table}>
+              <thead>
+                <tr>
+                  <th>Post</th>
+                  <th>What to fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                {seoIssues.map((p) => (
+                  <tr key={p.id}>
+                    <td>
+                      <Link href={`/admin/posts/${p.id}`} className={ui.link}>
+                        {p.title}
+                      </Link>
+                    </td>
+                    <td className={ui.muted}>{p.issues.join(" · ")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       <section className={ui.section} aria-labelledby="recent-heading">

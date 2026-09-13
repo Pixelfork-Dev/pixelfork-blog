@@ -59,9 +59,11 @@ export function buildPostMetadata(post: Post): Metadata {
   return {
     title,
     description,
-    authors: [{ name: post.author.name, url: post.author.url }],
+    authors: [{ name: post.author.name, url: absoluteUrl(`/authors/${post.author.slug}`) }],
     keywords: post.tags.map((t) => t.name),
-    alternates: alternates(url),
+    // Cross-posted articles point search engines at the original.
+    alternates: alternates(post.canonicalUrl ?? url),
+    ...(post.noindex ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       type: "article",
       url,
@@ -240,3 +242,6 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
     })),
   };
 }
+
+/** Metadata for URLs that 404 (or redirect) — never indexable. */
+export const notFoundMetadata: Metadata = { title: "Page not found", robots: { index: false, follow: true } };

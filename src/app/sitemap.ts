@@ -4,6 +4,7 @@ import { absoluteUrl } from "@/config/site";
 import { getActiveAuthors, getActiveTags, getAllPosts, getPostsByAuthor, getPostsByTag, paginate, paginateHome } from "@/lib/posts";
 
 export const dynamic = "force-static";
+export const revalidate = 600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getAllPosts();
@@ -20,7 +21,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  for (const post of posts) {
+  // Hidden (noindex) and cross-posted (canonical elsewhere) articles don't belong in our sitemap.
+  for (const post of posts.filter((p) => !p.noindex && !p.canonicalUrl)) {
     entries.push({
       url: absoluteUrl(`/posts/${post.slug}`),
       lastModified: post.updatedAt,

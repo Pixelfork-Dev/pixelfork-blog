@@ -3,11 +3,12 @@
 import { and, eq, inArray, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
+import { recordMove, releasePath } from "@/lib/admin/redirects";
 import { revalidatePublicSite } from "@/lib/admin/revalidate";
 import { assertRole, AuthorizationError } from "@/lib/auth/dal";
 import { isEmptyHtml, sanitizePostHtml } from "@/lib/sanitize";
 
-export type SaveIntent = "save" | "publish" | "unpublish";
+export type SaveIntent = "save" | "publish" | "schedule" | "unpublish";
 
 export interface PostInput {
   id?: string;
@@ -27,6 +28,11 @@ export interface PostInput {
   coverHeight?: number | null;
   seoTitle: string;
   seoDescription: string;
+  focusKeyword: string;
+  canonicalUrl: string;
+  noindex: boolean;
+  /** ISO date-time for intent "schedule". */
+  publishAt?: string | null;
 }
 
 export interface SaveResult {
@@ -57,6 +63,10 @@ const baseSchema = z.object({
   coverHeight: z.number().int().positive().max(20000).nullish(),
   seoTitle: z.string().trim().max(80, "Search titles get cut off after ~60 characters."),
   seoDescription: z.string().trim().max(200, "Meta descriptions get cut off after ~160 characters."),
+  focusKeyword: z.string().trim().max(60, "Keep the focus keyword short (a phrase people search for)."),
+  canonicalUrl: z.union([z.literal(""), z.url({ protocol: /^https$/, message: "Use the full https:// URL of the original article." })]),
+  noindex: z.boolean(),
+  publishAt: z.string().nullish(),
 });
 
 function fieldErrors(error: z.ZodError): SaveResult["fieldErrors"] {
@@ -88,14 +98,31 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
       };
     }
 
-    const wasLive = existing?.status === "published" || existing?.status === "scheduled";
+    const now = new Date();
+    const wasLive = Boolean(existing && existing.status !== "draft" && existing.publishedAt && existing.publishedAt <= now);
     const nextStatus =
-      intent === "publish" ? "published" : intent === "unpublish" ? "draft" : (existing?.status ?? "draft");
-    const willBeLive = nextStatus !== "draft";
+      intent === "publish"
+        ? "published"
+        : intent === "schedule"
+          ? "scheduled"
+          : intent === "unpublish"
+            ? "draft"
+            : (existing?.status ?? "draft");
 
     const errors: SaveResult["fieldErrors"] = {};
+
+    let publishedAt = existing?.publishedAt ?? null;
+    if (intent === "publish" && (!publishedAt || publishedAt > now)) publishedAt = now;
+    if (intent === "schedule") {
+      const when = data.publishAt ? new Date(data.publishAt) : null;
+      if (!when || Number.isNaN(when.getTime())) errors.publishAt = "Pick a date and time.";
+      else if (when.getTime() < now.getTime() + 60_000) errors.publishAt = "Pick a time in the future (or publish now).";
+      else publishedAt = when;
+    }
+    const willBeLive = nextStatus !== "draft" && Boolean(publishedAt && publishedAt <= now);
+    const willBePublic = nextStatus !== "draft"; // live now or scheduled
     if (coverAltMissing(data)) errors.coverAlt = "Describe the cover image for accessibility and image search.";
-    if (willBeLive) {
+    if (willBePublic) {
       if (data.excerpt.length < 40) errors.excerpt = "Published posts need an excerpt of at least 40 characters (used for SEO).";
       if (isEmptyHtml(content)) errors.content = "Published posts need some content.";
     }
@@ -130,15 +157,22 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
       coverHeight: data.coverSrc ? (data.coverHeight ?? (data.coverSrc === existing?.coverSrc ? existing.coverHeight : null)) : null,
       seoTitle: data.seoTitle || null,
       seoDescription: data.seoDescription || null,
+      focusKeyword: data.focusKeyword || null,
+      canonicalUrl: data.canonicalUrl || null,
+      noindex: data.noindex,
       authorId: data.authorId,
       updatedById: user.id,
-      publishedAt: intent === "publish" ? (existing?.publishedAt ?? new Date()) : (existing?.publishedAt ?? null),
+      publishedAt,
     };
 
     const saved = await db.transaction(async (tx) => {
       const [row] = existing
         ? await tx.update(schema.posts).set(values).where(eq(schema.posts.id, existing.id)).returning()
         : await tx.insert(schema.posts).values({ ...values, createdById: user.id }).returning();
+
+      // Keep old links working when a live post's URL changes.
+      if (wasLive && existing && existing.slug !== row.slug) await recordMove(`/posts/${existing.slug}`, `/posts/${row.slug}`, tx);
+      if (willBePublic) await releasePath(`/posts/${row.slug}`, tx);
 
       await tx.delete(schema.postTags).where(eq(schema.postTags.postId, row.id));
       const uniqueTags = [...new Set(data.tagIds)];
@@ -150,16 +184,23 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
 
     if (wasLive || willBeLive) revalidatePublicSite();
 
+    const slugMoved = wasLive && existing && existing.slug !== saved.slug;
     const message =
-      intent === "publish"
-        ? wasLive
-          ? "Changes published."
-          : "Post published — it’s live now."
-        : intent === "unpublish"
-          ? "Post unpublished and moved back to drafts."
-          : willBeLive
+      intent === "schedule"
+        ? `Scheduled for ${publishedAt!.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC.`
+        : intent === "publish"
+          ? wasLive
             ? "Changes published."
-            : "Draft saved.";
+            : "Post published — it’s live now."
+          : intent === "unpublish"
+            ? "Post unpublished and moved back to drafts."
+            : willBeLive
+              ? slugMoved
+                ? `Changes published. The old URL now redirects to /posts/${saved.slug}.`
+                : "Changes published."
+              : nextStatus === "scheduled"
+                ? "Scheduled post saved."
+                : "Draft saved.";
 
     return {
       ok: true,

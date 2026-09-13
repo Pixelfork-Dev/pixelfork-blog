@@ -3,6 +3,7 @@
 import { and, count, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
+import { recordMove, releasePath } from "@/lib/admin/redirects";
 import { revalidatePublicSite } from "@/lib/admin/revalidate";
 import { assertRole, AuthorizationError } from "@/lib/auth/dal";
 
@@ -72,10 +73,13 @@ export async function saveAuthor(input: AuthorInput): Promise<AuthorResult> {
       sameAs: data.sameAs,
     };
 
+    const before = id ? await db.query.authors.findFirst({ columns: { slug: true }, where: eq(schema.authors.id, id) }) : undefined;
     const [row] = id
       ? await db.update(schema.authors).set(values).where(eq(schema.authors.id, id)).returning({ id: schema.authors.id })
       : await db.insert(schema.authors).values(values).returning({ id: schema.authors.id });
     if (!row) return { ok: false, message: "This author no longer exists." };
+    if (before && before.slug !== data.slug) await recordMove(`/authors/${before.slug}`, `/authors/${data.slug}`);
+    else if (!id) await releasePath(`/authors/${data.slug}`);
 
     revalidatePublicSite();
     return { ok: true, message: id ? "Profile saved." : "Author created.", id: row.id };

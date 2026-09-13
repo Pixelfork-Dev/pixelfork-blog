@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BlogIndex } from "@/components/BlogIndex";
 import { getAllPosts, paginateHome, parsePageParam } from "@/lib/posts";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildPageMetadata, notFoundMetadata } from "@/lib/seo";
 import { siteConfig } from "@/config/site";
 
 export const dynamicParams = true;
@@ -14,7 +14,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/page/[page]">): Promise<Metadata> {
   const page = parsePageParam((await params).page);
-  if (!page) return {};
+  if (!page) return notFoundMetadata;
   return buildPageMetadata({
     title: `All articles — Page ${page}`,
     description: `Page ${page} of game development tutorials, tips and insights from the ${siteConfig.name}.`,

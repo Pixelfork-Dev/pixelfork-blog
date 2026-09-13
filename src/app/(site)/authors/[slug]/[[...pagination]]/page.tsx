@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AuthorIndex } from "@/components/AuthorIndex";
 import { getActiveAuthors, getAuthorBySlug, getPostsByAuthor, paginate, parsePageParam } from "@/lib/posts";
-import { buildPageMetadata } from "@/lib/seo";
+import { redirectOrNotFound } from "@/lib/redirects";
+import { buildPageMetadata, notFoundMetadata } from "@/lib/seo";
 
 /** /authors/[slug] and /authors/[slug]/page/[n]. */
 export const dynamicParams = true;
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: PageProps<"/authors/[slug]/[[
   const { slug, pagination } = await params;
   const author = await getAuthorBySlug(slug);
   const page = parsePagination(pagination);
-  if (!author || !page) return {};
+  if (!author || !page) return notFoundMetadata;
   const description =
     author.bio ?? `Articles by ${author.name}${author.role ? `, ${author.role}` : ""} on the Pixelfork Blog.`;
   const meta = buildPageMetadata({
@@ -41,6 +42,7 @@ export async function generateMetadata({ params }: PageProps<"/authors/[slug]/[[
 export default async function AuthorPage({ params }: PageProps<"/authors/[slug]/[[...pagination]]">) {
   const { slug, pagination } = await params;
   const [author, page] = [await getAuthorBySlug(slug), parsePagination(pagination)];
-  if (!author || !page) notFound();
+  if (!author) return redirectOrNotFound(`/authors/${slug}`);
+  if (!page) notFound();
   return <AuthorIndex author={author} page={page} />;
 }

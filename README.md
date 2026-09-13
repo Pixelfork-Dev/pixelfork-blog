@@ -41,6 +41,18 @@ Publishing, updating, unpublishing or deleting a live post refreshes the public 
 appear on the home page, tag pages, sitemap, RSS and their own URL right away. If two people edit the same post, the second save is
 rejected instead of overwriting the first.
 
+## SEO tools
+
+- **Editor SEO panel:** focus keyword checks (title, description, URL, intro, headings), title/description length, word count,
+  heading structure, cover and image alt text, internal links, plus Google and social share previews.
+- **Advanced:** canonical URL for cross-posted articles; *Hide from search* adds `noindex` and removes the post from the sitemap.
+- **Scheduling:** *Schedule…* picks a publish time. Public pages regenerate at least every 10 minutes (ISR), so scheduled posts go
+  live on time with no cron job.
+- **Redirects:** changing the URL of a live post, tag or author creates a permanent (308) redirect automatically, with chains
+  flattened to one hop. *Admin → Redirects* lists them with hit counts and accepts manual redirects (for example old blog URLs).
+  Redirects are only looked up for URLs that would otherwise 404, so normal page views stay fully static.
+- **Dashboard → SEO health:** published posts with fixable issues.
+
 ## Media & tags
 
 - *Admin → Media:* drag-and-drop uploads (JPEG, PNG, WebP, GIF, AVIF; SVG is rejected). Uploads are checked by their actual
@@ -100,4 +112,4 @@ seed/                  Starter posts and tags imported into an empty database
 2. ✅ Posts: rich-text editor (Tiptap), drafts, preview, publish/unpublish, delete, conflict detection, on-demand revalidation
 3. ✅ Media library (uploads resized to WebP, alt text, picker in the editor, in-use protection) and tag management
 4. ✅ Author profiles (admin) and public author pages with Person/ProfilePage JSON-LD, bylines and author boxes
-5. SEO panel, scheduled publishing, redirects
+5. ✅ SEO panel (checklist, focus keyword, social preview, canonical, noindex), scheduled publishing, redirects, SEO health
