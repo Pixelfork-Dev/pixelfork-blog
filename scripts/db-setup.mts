@@ -14,6 +14,22 @@ try {
   process.loadEnvFile(".env.local");
 } catch {}
 
+// Log where we connect (never the credentials) so a wrong connection string is easy to spot in build logs.
+try {
+  const target = new URL(process.env.DATABASE_URL ?? "");
+  console.log(`→ database: ${target.hostname}:${target.port || "5432"} (user ${decodeURIComponent(target.username).replace(/\..*/, ".***")})`);
+  if (/^db\.[a-z0-9]+\.supabase\.co$/.test(target.hostname) && process.env.VERCEL) {
+    console.error(
+      "✗ DATABASE_URL is Supabase's direct connection (IPv6 only), which Vercel can't reach.\n" +
+        "  Use Supabase → Connect → Transaction pooler (host *.pooler.supabase.com, port 6543).",
+    );
+    process.exit(1);
+  }
+} catch {
+  console.error("✗ DATABASE_URL is missing or not a valid URL (special characters in the password must be URL-encoded).");
+  process.exit(1);
+}
+
 const { db, schema } = await import("../src/db/index.ts");
 const { seedAuthor, seedTags } = await import("../seed/taxonomy.ts");
 
