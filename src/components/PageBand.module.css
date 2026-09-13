@@ -12,9 +12,10 @@
 }
 
 @media (max-width: 767px) {
+  /* Same height with or without breadcrumbs: 12px + one 20px breadcrumb line + 12px. */
   .band,
   .inner {
-    min-height: 24px;
+    min-height: 44px;
   }
 
   .inner {

@@ -4,6 +4,9 @@
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 44px);
+  /* The pixel runner pushes the right rail (and itself) past the edge; never let that widen
+     the page, or mobile browsers zoom out. `clip` (unlike `hidden`) keeps sticky elements working. */
+  overflow-x: clip;
 }
 
 /* Each rail is its own layer so the pixel runner can push the right one around. */

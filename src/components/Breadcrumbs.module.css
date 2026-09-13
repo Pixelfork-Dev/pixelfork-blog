@@ -1,22 +1,31 @@
+/* Always a single line: earlier crumbs keep their size, the current page title truncates with an ellipsis. */
 .list {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
+  min-width: 0;
   list-style: none;
   padding: 0;
   color: var(--color-text-muted);
   font-size: 14px;
   line-height: 20px;
+  white-space: nowrap;
 }
 
 .item {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+}
+
+.item:last-child {
+  flex-shrink: 1;
   min-width: 0;
 }
 
 .item + .item::before {
   content: "/";
+  flex-shrink: 0;
   padding: 0 8px;
   color: var(--color-line);
 }
@@ -26,6 +35,7 @@
 }
 
 .current {
+  min-width: 0;
   color: var(--color-nav);
   overflow: hidden;
   text-overflow: ellipsis;
