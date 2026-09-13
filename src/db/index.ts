@@ -3,7 +3,7 @@ import { Pool } from "pg";
 import * as schema from "./schema";
 
 /**
- * One Postgres client for everything: Neon in production (Vercel), the local PGlite
+ * One Postgres client for everything: Supabase Postgres in production (Vercel), the local PGlite
  * server in development (`npm run db:local`). Both speak the regular Postgres protocol.
  */
 
@@ -14,13 +14,26 @@ function createPool() {
   if (!connectionString) {
     throw new Error("DATABASE_URL is not set. Copy .env.example to .env.local (and run `npm run db:local`).");
   }
-  const isLocal = /@(localhost|127\.0\.0\.1)[:/]/.test(connectionString);
+  const url = new URL(connectionString);
+  const isLocal = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+  // pg lets sslmode in the URL override the ssl option below, so TLS is configured here only.
+  for (const param of ["sslmode", "sslrootcert", "supa"]) url.searchParams.delete(param);
   return new Pool({
-    connectionString,
+    connectionString: url.toString(),
     max: isLocal ? 4 : 5,
-    ssl: isLocal ? false : { rejectUnauthorized: true },
+    ssl: isLocal ? false : sslOptions(),
     idleTimeoutMillis: 10_000,
   });
+}
+
+/**
+ * Supabase signs its database certificates with its own CA. Set DATABASE_CA_CERT to that certificate
+ * (Supabase → Project Settings → Database → SSL certificate) to verify the server; without it the
+ * connection is still encrypted but the certificate isn't verified.
+ */
+function sslOptions() {
+  const ca = process.env.DATABASE_CA_CERT?.replace(/\\n/g, "\n");
+  return ca ? { ca, rejectUnauthorized: true } : { rejectUnauthorized: false };
 }
 
 // Reuse the pool across hot reloads in dev and across invocations of a warm serverless function.

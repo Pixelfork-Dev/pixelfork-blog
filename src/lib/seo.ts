@@ -31,6 +31,8 @@ interface PageMetaInput {
 export function buildPageMetadata({ title, description, path, noindex }: PageMetaInput): Metadata {
   const url = absoluteUrl(path);
   const desc = description ?? siteConfig.description;
+  // A page-level `openGraph` object drops the inherited app/opengraph-image, so reference it explicitly.
+  const image = { url: absoluteUrl("/opengraph-image"), width: 1200, height: 630, alt: siteConfig.name };
   return {
     title: title ?? { absolute: siteConfig.title },
     description: desc,
@@ -42,11 +44,13 @@ export function buildPageMetadata({ title, description, path, noindex }: PageMet
       description: desc,
       siteName: siteConfig.name,
       locale: siteConfig.locale,
+      images: [image],
     },
     twitter: {
       card: "summary_large_image",
       title: title ? `${title} | ${siteConfig.name}` : siteConfig.title,
       description: desc,
+      images: [image],
     },
     ...(noindex ? { robots: { index: false, follow: true } } : {}),
   };

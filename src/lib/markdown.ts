@@ -9,6 +9,7 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
+import { assetPath } from "@/config/site";
 import type { TocItem } from "./types";
 
 /**
@@ -42,6 +43,17 @@ function rehypeLazyMedia() {
   };
 }
 
+/** Root-relative links and images in articles ("/posts/x") must include the base path ("/blog/posts/x"). */
+function rehypeBasePath() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      const attr = node.tagName === "a" ? "href" : node.tagName === "img" ? "src" : null;
+      const value = attr && node.properties?.[attr];
+      if (typeof value === "string") node.properties[attr!] = assetPath(value);
+    });
+  };
+}
+
 const externalLinkOptions = { target: "_blank" as const, rel: ["noopener", "noreferrer"] };
 
 export async function renderMarkdown(markdown: string) {
@@ -53,6 +65,7 @@ export async function renderMarkdown(markdown: string) {
     .use(rehypeSlug)
     .use(rehypeToc(toc))
     .use(rehypeLazyMedia)
+    .use(rehypeBasePath)
     .use(rehypeExternalLinks, externalLinkOptions)
     .use(rehypeStringify)
     .process(markdown);
@@ -68,6 +81,7 @@ export async function renderHtml(html: string) {
     .use(rehypeSlug)
     .use(rehypeToc(toc))
     .use(rehypeLazyMedia)
+    .use(rehypeBasePath)
     .use(rehypeExternalLinks, externalLinkOptions)
     .use(rehypeStringify)
     .process(html);

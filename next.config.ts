@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+// Keep in sync with src/config/site.ts: the base path comes from the public URL (https://pixelfork.ai/blog → /blog).
+const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://pixelfork.ai/blog");
+const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? siteUrl.pathname).replace(/\/$/, "");
+
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -10,6 +14,11 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  basePath: basePath || undefined,
+  experimental: {
+    // The admin's server actions are posted to pixelfork.ai and proxied here by the main site's rewrite.
+    serverActions: { allowedOrigins: [siteUrl.host] },
+  },
   reactStrictMode: true,
   images: {
     formats: ["image/avif", "image/webp"],

@@ -24,14 +24,14 @@ export default async function LoginPage({ searchParams }: PageProps<"/admin/logi
 
   async function signInWithGoogle() {
     "use server";
-    await signIn("google", { redirectTo: "/admin" });
+    await signIn("google", { redirectTo: assetPath("/admin") });
   }
 
   async function devSignIn(formData: FormData) {
     "use server";
     if (!devLoginEnabled) return;
     try {
-      await signIn("dev", { email: String(formData.get("email") ?? ""), redirectTo: "/admin" });
+      await signIn("dev", { email: String(formData.get("email") ?? ""), redirectTo: assetPath("/admin") });
     } catch (e) {
       if (e instanceof AuthError) redirect("/admin/login?error=AccessDenied");
       throw e;

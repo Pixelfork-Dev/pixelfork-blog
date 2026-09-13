@@ -5,6 +5,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { del, put } from "@vercel/blob";
 import sharp, { type Metadata } from "sharp";
+import { basePath } from "@/config/site";
 
 /**
  * Image storage: Vercel Blob when BLOB_READ_WRITE_TOKEN is set (production), otherwise the local
@@ -77,7 +78,7 @@ export async function storeImage(buffer: Buffer, originalName: string) {
   const file = path.join(LOCAL_UPLOAD_DIR, key);
   await fs.mkdir(path.dirname(file), { recursive: true });
   await fs.writeFile(file, buffer);
-  return { url: `/uploads/${key}`, pathname: key };
+  return { url: `${basePath}/uploads/${key}`, pathname: key };
 }
 
 export async function removeImage(stored: { url: string; pathname: string }) {

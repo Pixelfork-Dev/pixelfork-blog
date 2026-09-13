@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { absoluteUrl, noindex, siteConfig } from "@/config/site";
+import { absoluteUrl, basePath, noindex } from "@/config/site";
 
 export const dynamic = "force-static";
 
@@ -13,16 +13,17 @@ export default function robots(): MetadataRoute.Robots {
     return { rules: { userAgent: "*", disallow: "/" } };
   }
 
+  // Crawlers only read /robots.txt at the domain root (the main site); this copy documents the rules
+  // for /blog. Add `Sitemap: https://pixelfork.ai/blog/sitemap.xml` to the main site's robots.txt.
   return {
     rules: [
       {
         userAgent: "*",
         allow: "/",
-        // Reserved for the upcoming admin panel and API routes.
-        disallow: ["/admin", "/api/"],
+        disallow: [`${basePath}/admin`, `${basePath}/api/`],
       },
     ],
     sitemap: absoluteUrl("/sitemap.xml"),
-    host: siteConfig.url,
+    host: new URL(absoluteUrl("/")).origin,
   };
 }

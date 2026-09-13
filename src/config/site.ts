@@ -2,11 +2,13 @@
  * Central site configuration. Everything SEO- and brand-related reads from here,
  * so moving the blog to another domain (or a /blog sub-path) is a one-line change.
  */
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://pixelfork.ai/blog").replace(/\/$/, "");
+
 export const siteConfig = {
   name: "Pixelfork Blog",
   shortName: "Pixelfork",
-  // Set NEXT_PUBLIC_SITE_URL in production (no trailing slash).
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://blog.pixelfork.ai").replace(/\/$/, ""),
+  // Public URL including the sub-path, no trailing slash. The base path ("/blog") is derived from it.
+  url: SITE_URL,
   mainSiteUrl: "https://pixelfork.ai",
   title: "Pixelfork Blog — Game Development Tutorials, Tips & Insights",
   description:
@@ -49,19 +51,23 @@ export const footerLinks = [
 ] as const;
 
 /**
- * Sub-path the app is served from (e.g. "/pixelfork-blog" on GitHub Pages). Empty in normal hosting.
- * next/link adds it automatically; plain asset URLs (next/image src, manifest) need assetPath().
+ * Sub-path the app is served from: "/blog" on pixelfork.ai (the main site rewrites /blog/* to this app).
+ * Must match `basePath` in next.config.ts. next/link and redirect() add it automatically; plain URLs
+ * (next/image src, <a href>, fetch, article HTML) need assetPath().
  */
-export const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+export const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? new URL(SITE_URL).pathname).replace(/\/$/, "");
 
 /** Preview deployments (like GitHub Pages) set this so they never compete with the real domain in search. */
 export const noindex = process.env.NEXT_PUBLIC_NOINDEX === "true";
 
 export function assetPath(path: string) {
-  return path.startsWith("/") ? `${basePath}${path}` : path;
+  if (!path.startsWith("/") || path.startsWith("//") || !basePath) return path;
+  return path === basePath || path.startsWith(`${basePath}/`) ? path : `${basePath}${path}`;
 }
 
 /** siteConfig.url already includes the base path, so this is correct for both hosting modes. */
 export function absoluteUrl(path = "/") {
+  // The home page is /blog, not /blog/ (Next redirects the trailing slash away).
+  if (path === "/" || path === "") return siteConfig.url;
   return `${siteConfig.url}${path.startsWith("/") ? path : `/${path}`}`;
 }

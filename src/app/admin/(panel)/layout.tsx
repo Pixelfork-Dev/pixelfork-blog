@@ -12,7 +12,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
 
   async function doSignOut() {
     "use server";
-    await signOut({ redirectTo: "/admin/login" });
+    await signOut({ redirectTo: assetPath("/admin/login") });
   }
 
   return (
@@ -46,7 +46,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
                 My profile
               </Link>
             )}
-            <a href="/" target="_blank" rel="noreferrer" className={ui.buttonGhost}>
+            <a href={assetPath("/")} target="_blank" rel="noreferrer" className={ui.buttonGhost}>
               View blog
             </a>
             <form action={doSignOut}>

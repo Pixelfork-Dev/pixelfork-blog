@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { assetPath } from "@/config/site";
 import { deleteMedia, listMedia, updateMediaAlt, type MediaItem } from "./actions";
 import ui from "../../admin.module.css";
 import styles from "./media.module.css";
@@ -51,7 +52,7 @@ export function MediaLibrary({ mode, initialItems, onSelect }: Props) {
       try {
         const body = new FormData();
         body.append("file", file);
-        const res = await fetch("/api/admin/media", { method: "POST", body });
+        const res = await fetch(assetPath("/api/admin/media"), { method: "POST", body });
         const json = await res.json();
         if (!res.ok) {
           setMessage({ ok: false, text: `${file.name}: ${json.error ?? "Upload failed."}` });
