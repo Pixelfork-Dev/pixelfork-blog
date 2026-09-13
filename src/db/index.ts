@@ -23,6 +23,8 @@ function createPool() {
     max: isLocal ? 4 : 5,
     ssl: isLocal ? false : sslOptions(),
     idleTimeoutMillis: 10_000,
+    // Fail fast with an error instead of hanging a build or request when the database can't be reached.
+    connectionTimeoutMillis: 15_000,
   });
 }
 

@@ -33,6 +33,16 @@ try {
 const { db, schema } = await import("../src/db/index.ts");
 const { seedAuthor, seedTags } = await import("../seed/taxonomy.ts");
 
+try {
+  await db.execute("select 1");
+  console.log("✓ connected");
+} catch (error) {
+  const cause = (error as { cause?: Error }).cause ?? (error as Error);
+  console.error(`✗ Can't connect to the database: ${cause.message}`);
+  console.error("  Check DATABASE_URL (Supabase → Connect → Transaction pooler) and that the password is correct.");
+  process.exit(1);
+}
+
 await migrate(db, { migrationsFolder: "drizzle" });
 console.log("✓ migrations applied");
 
