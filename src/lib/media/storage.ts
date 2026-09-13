@@ -19,8 +19,12 @@ const ALLOWED_FORMATS = new Set(["jpeg", "png", "webp", "gif", "avif", "heif"]);
 
 export class UploadError extends Error {}
 
+/**
+ * Vercel Blob is configured either with a read-write token (BLOB_READ_WRITE_TOKEN) or, for stores connected
+ * the newer way, with BLOB_STORE_ID plus Vercel's automatic OIDC token. @vercel/blob handles both.
+ */
 export function blobConfigured() {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
 }
 
 function slugifyFilename(name: string) {
@@ -72,7 +76,7 @@ export async function storeImage(buffer: Buffer, originalName: string) {
     return { url: blob.url, pathname: blob.pathname };
   }
   if (process.env.VERCEL) {
-    throw new UploadError("Media storage isn’t configured. Add a Vercel Blob store (BLOB_READ_WRITE_TOKEN).");
+    throw new UploadError("Media storage isn’t configured. Connect a Vercel Blob store to the project.");
   }
 
   const file = path.join(LOCAL_UPLOAD_DIR, key);

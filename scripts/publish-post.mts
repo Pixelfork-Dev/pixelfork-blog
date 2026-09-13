@@ -37,7 +37,7 @@ if (sync) {
   flags.add("--all");
   flags.add("--draft");
   flags.delete("--replace");
-  if (process.env.VERCEL && !process.env.BLOB_READ_WRITE_TOKEN) {
+  if (process.env.VERCEL && !process.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_STORE_ID) {
     console.log("- content sync skipped: connect a Vercel Blob store so article images can be uploaded");
     process.exit(0);
   }
