@@ -7,7 +7,7 @@ import styles from "./PageBand.module.css";
  */
 export function PageBand({ children }: { children?: ReactNode }) {
   return (
-    <div className={`${styles.band} dash-bottom`}>
+    <div className={`${styles.band} dash-bottom`} data-runner-track>
       <div className={`container ${styles.inner}`}>{children}</div>
     </div>
   );

@@ -46,3 +46,6 @@ next-env.d.ts
 # local tooling
 /.claude/
 !.env.example
+
+# Source art pack (only the exported sheets in public/sprites are used)
+/2D-Pixel-Art-Character-Template-2/

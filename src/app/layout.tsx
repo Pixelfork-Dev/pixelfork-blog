@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { JsonLd } from "@/components/JsonLd";
+import { PixelRunner } from "@/components/PixelRunner/PixelRunner";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { absoluteUrl, noindex, siteConfig } from "@/config/site";
@@ -84,6 +85,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <main id="main" className={styles.main}>
             {children}
           </main>
+          <PixelRunner />
         </div>
         <SiteFooter />
       </body>
