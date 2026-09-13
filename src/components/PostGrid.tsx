@@ -15,7 +15,7 @@ export function PostGrid({ posts, headingLevel = "h2", priorityCount = 0, label 
     <div className="container">
       <ul className={styles.grid} aria-label={label}>
         {posts.map((post, i) => (
-          <li key={post.slug} className={styles.cell} data-runner-perch="full">
+          <li key={post.slug} className={styles.cell}>
             <PostCard post={post} headingLevel={headingLevel} priority={i < priorityCount} />
           </li>
         ))}

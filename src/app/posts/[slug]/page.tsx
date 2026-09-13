@@ -84,18 +84,18 @@ export default async function PostPage({ params }: PageProps<"/posts/[slug]">) {
         </header>
 
         <div className={`container ${styles.layout}`}>
-          <aside className={styles.aside} data-runner-pole>
+          <aside className={styles.aside}>
             <div className={styles.sticky}>
               {post.toc.length > 0 && <TableOfContents items={post.toc} />}
               <ShareLinks url={url} title={post.title} />
             </div>
           </aside>
-          <div className={styles.prose} data-runner-reading dangerouslySetInnerHTML={{ __html: post.html }} />
+          <div className={styles.prose} dangerouslySetInnerHTML={{ __html: post.html }} />
         </div>
       </article>
 
       {related.length > 0 && (
-        <section aria-labelledby="related-heading" className={`${styles.related} dash-top`} data-runner-finish>
+        <section aria-labelledby="related-heading" className={`${styles.related} dash-top`}>
           <div className={`${styles.relatedBar} dash-bottom`}>
             <div className="container">
               <h2 id="related-heading" className={styles.relatedTitle}>

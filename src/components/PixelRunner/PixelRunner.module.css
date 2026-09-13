@@ -8,6 +8,7 @@
   background-repeat: no-repeat;
   image-rendering: pixelated;
   pointer-events: none;
+  transform-origin: 24px 24px;
   opacity: 0;
   transition: opacity 0.3s ease;
   will-change: transform;
@@ -15,26 +16,4 @@
 
 .runner[data-ready="true"] {
   opacity: 1;
-}
-
-/* Katana mode (easter egg): it fights back, so you can click it. */
-.runner[data-katana="true"] {
-  pointer-events: auto;
-  cursor: crosshair;
-}
-
-.fx {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 6;
-  pointer-events: none;
-}
-
-.fx > div {
-  position: absolute;
-  top: 0;
-  left: 0;
-  image-rendering: pixelated;
-  will-change: transform;
 }
