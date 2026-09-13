@@ -89,3 +89,10 @@
     display: none;
   }
 }
+
+/* On desktop the CTA moves down onto the band's dashed line (see PageBand). */
+@media (min-width: 1024px) {
+  .cta {
+    display: none;
+  }
+}

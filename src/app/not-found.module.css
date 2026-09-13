@@ -6,11 +6,32 @@
   padding: 64px 16px;
 }
 
+.inner {
+  position: relative;
+}
+
 .code {
   padding: 8px;
   border: 1px dashed var(--color-line);
   color: var(--color-text-muted);
   font-size: 14px;
+}
+
+/* Desktop: the 404 becomes a crate standing on the section's dashed line for the pixel runner to push. */
+@media (min-width: 1024px) {
+  .code {
+    position: absolute;
+    left: 58%;
+    bottom: 1px;
+    padding: 18px 26px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 48px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    transform: translateX(var(--crate-x, 0px));
+  }
 }
 
 .title {

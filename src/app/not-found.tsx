@@ -18,7 +18,9 @@ export default async function NotFound() {
       <PageBand />
       <section className={`${styles.hero} dash-bottom`}>
         <div className={`container ${styles.inner}`}>
-          <p className={styles.code}>404</p>
+          <p className={styles.code} data-runner-crate>
+            404
+          </p>
           <h1 className={styles.title}>This page doesn’t exist</h1>
           <p className={styles.text}>The article may have moved. Try one of the latest posts below.</p>
           <Link href="/" className={styles.button}>

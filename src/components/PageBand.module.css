@@ -21,3 +21,38 @@
     padding: 12px 16px;
   }
 }
+
+/* Desktop: the CTA lives on the dashed line as an obstacle for the pixel runner. */
+.inner {
+  position: relative;
+}
+
+.cta {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .cta {
+    position: absolute;
+    left: 62%;
+    bottom: 1px;
+    display: flex;
+    align-items: center;
+    padding: 11.5px 15.5px;
+    border: 0.5px solid rgba(102, 102, 102, 0.05);
+    border-radius: 34px;
+    background: #fff;
+    color: #000;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    white-space: nowrap;
+    transform: translateX(calc(-50% + var(--knock-x, 0px))) rotate(var(--knock-r, 0deg));
+    transform-origin: 50% 100%;
+    transition: background-color 0.15s ease;
+  }
+
+  .cta:hover {
+    background: #e6e6e6;
+  }
+}
