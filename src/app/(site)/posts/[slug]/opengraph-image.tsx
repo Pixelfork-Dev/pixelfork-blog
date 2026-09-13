@@ -1,5 +1,4 @@
-import { formatDate, formatReadingTime } from "@/lib/format";
-import { ogSize, renderOgImage } from "@/lib/og";
+import { ogSize, renderOgImage, renderPostOgImage } from "@/lib/og";
 import { getAllPosts, getPostBySlug } from "@/lib/posts";
 
 export const alt = "Pixelfork Blog article";
@@ -13,9 +12,6 @@ export async function generateStaticParams() {
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const post = await getPostBySlug((await params).slug);
-  return renderOgImage({
-    eyebrow: post?.tags[0]?.name ?? "Blog",
-    title: post?.title ?? "Pixelfork Blog",
-    footer: post ? `${formatDate(post.publishedAt)} · ${formatReadingTime(post.readingTimeMinutes)}` : "",
-  });
+  if (!post) return renderOgImage({ eyebrow: "Blog", title: "Pixelfork Blog", footer: "" });
+  return renderPostOgImage({ cover: post.cover?.src ?? null, tag: post.tags[0]?.name ?? "Blog", title: post.title });
 }

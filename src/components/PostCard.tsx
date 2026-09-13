@@ -24,6 +24,15 @@ const imageSizes: Record<Variant, string> = {
 
 export function PostCard({ post, variant = "grid", headingLevel: Heading = "h2", priority }: PostCardProps) {
   const href = `/posts/${post.slug}`;
+  // The large featured card shows the title over the cover (soft gradient + tag pill), magazine style.
+  const overlay = variant === "hero";
+  const title = (
+    <Heading className={styles.title}>
+      <Link href={href} className={styles.link}>
+        {post.title}
+      </Link>
+    </Heading>
+  );
 
   return (
     <article className={`${styles.card} ${styles[variant]}`}>
@@ -36,13 +45,15 @@ export function PostCard({ post, variant = "grid", headingLevel: Heading = "h2",
           className={styles.image}
           priority={priority}
         />
+        {overlay && (
+          <div className={styles.overlay}>
+            {post.tags[0] && <span className={styles.pill}>{post.tags[0].name}</span>}
+            {title}
+          </div>
+        )}
       </div>
       <div className={styles.body}>
-        <Heading className={styles.title}>
-          <Link href={href} className={styles.link}>
-            {post.title}
-          </Link>
-        </Heading>
+        {!overlay && title}
         <p className={styles.meta}>
           <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
           {" · "}

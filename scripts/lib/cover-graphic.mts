@@ -1,20 +1,16 @@
 /**
  * Type C covers: bold, code-built graphics for lists, comparisons and technical topics. No AI; the
- * headline is real text, so it's always spelled right. Renders a 1600×900 SVG.
+ * artwork sits in the center so the site can place the title over it. Renders a 1600×900 SVG.
  */
-import { esc, wrap } from "./graphics.mts";
 
 const W = 1600;
 const H = 900;
-const FONT = "Helvetica Neue, Helvetica, Arial, sans-serif";
 const ORANGE = "#F26207";
 
 export type GraphicTemplate = "gauge" | "network" | "document" | "bars";
 
 export interface GraphicCover {
   template: GraphicTemplate;
-  kicker: string;
-  headline: string;
   /** Two gradient colors for the background. */
   colors: [string, string];
 }
@@ -30,14 +26,6 @@ function background([a, b]: [string, string]) {
   <rect width="${W}" height="${H}" fill="url(#bg)"/>${dots}<rect width="${W}" height="${H}" fill="url(#glow)"/>`;
 }
 
-function headline(kicker: string, text: string) {
-  const lines = wrap(text, 16).slice(0, 3);
-  const size = 86;
-  const top = H - 110 - (lines.length - 1) * (size + 6);
-  return `<rect x="96" y="${top - size - 70}" width="${kicker.length * 17 + 48}" height="48" rx="24" fill="#141629"/>
-    <text x="${120}" y="${top - size - 37}" font-family="${FONT}" font-size="22" font-weight="700" letter-spacing="3" fill="${ORANGE}">${esc(kicker.toUpperCase())}</text>
-    ${lines.map((l, i) => `<text x="96" y="${top + i * (size + 6)}" font-family="${FONT}" font-size="${size}" font-weight="800" letter-spacing="-2" fill="#fff">${esc(l)}</text>`).join("")}`;
-}
 
 /** Performance: a phone with a speed gauge. */
 function gauge() {
@@ -114,6 +102,7 @@ function bars() {
 }
 
 export function graphicCoverSvg(cover: GraphicCover) {
+  // The artwork is centered; titles are added by the site (hero card, social image), never baked in.
   const art = { gauge, network, document: documentStack, bars }[cover.template]();
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${background(cover.colors)}${art}${headline(cover.kicker, cover.headline)}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${background(cover.colors)}<g transform="translate(-380 20)">${art}</g></svg>`;
 }

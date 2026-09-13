@@ -15,6 +15,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   basePath: basePath || undefined,
+  // Files read at runtime by the social image routes.
+  outputFileTracingIncludes: { "/posts/*/opengraph-image*": ["./src/assets/fonts/**", "./public/logo.svg", "./public/images/**"] },
   experimental: {
     // The admin's server actions are posted to pixelfork.ai and proxied here by the main site's rewrite.
     serverActions: { allowedOrigins: [siteUrl.host] },
