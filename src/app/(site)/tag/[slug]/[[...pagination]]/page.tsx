@@ -8,7 +8,7 @@ import { buildPageMetadata } from "@/lib/seo";
  * Handles both /tag/[slug] and /tag/[slug]/page/[n] in one route, so every tag always
  * generates at least one page (required by static export).
  */
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const params: { slug: string; pagination: string[] }[] = [];

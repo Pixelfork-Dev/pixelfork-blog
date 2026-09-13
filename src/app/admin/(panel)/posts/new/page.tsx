@@ -1,0 +1,35 @@
+import type { Metadata } from "next";
+import { requireUser } from "@/lib/auth/dal";
+import { loadEditorOptions } from "../editor/data";
+import { PostEditor } from "../editor/PostEditor";
+
+export const metadata: Metadata = { title: "New post" };
+
+export default async function NewPostPage() {
+  const user = await requireUser();
+  const { tags, authors } = await loadEditorOptions();
+
+  return (
+    <PostEditor
+      tags={tags}
+      authors={authors}
+      post={{
+        title: "",
+        slug: "",
+        excerpt: "",
+        content: "",
+        tagIds: [],
+        // Default byline: the signed-in person's author profile.
+        authorId: user.authorId ?? authors[0]?.id ?? "",
+        featured: false,
+        coverSrc: "",
+        coverAlt: "",
+        seoTitle: "",
+        seoDescription: "",
+        status: "draft",
+        updatedAt: null,
+        publishedAt: null,
+      }}
+    />
+  );
+}

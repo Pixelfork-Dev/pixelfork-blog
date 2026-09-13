@@ -1,10 +1,10 @@
 import "server-only";
 
-import { and, asc, eq, inArray, isNotNull, lte } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, lte, type SQL } from "drizzle-orm";
 import { cache } from "react";
 import { siteConfig } from "@/config/site";
 import { db, schema } from "@/db";
-import { countWords, renderMarkdown } from "./markdown";
+import { countWords, renderHtml, renderMarkdown } from "./markdown";
 import type { Author, Post, PostSummary, Tag } from "./types";
 
 /**
@@ -43,42 +43,55 @@ const isLive = () =>
     lte(schema.posts.publishedAt, new Date()),
   );
 
-const loadLivePosts = cache(async () => {
-  const rows = await db.query.posts.findMany({
-    where: isLive(),
+function findPosts(where: SQL | undefined) {
+  return db.query.posts.findMany({
+    where,
     orderBy: (p, { desc }) => [desc(p.publishedAt)],
     with: {
       author: true,
-      postTags: { with: { tag: true }, orderBy: (pt) => [asc(pt.position)] },
+      postTags: { with: { tag: true }, orderBy: (pt, { asc }) => [asc(pt.position)] },
     },
   });
+}
 
-  return rows.map((row) => {
-    const wordCount = countWords(row.content);
-    const summary: PostSummary = {
-      slug: row.slug,
-      title: row.title,
-      excerpt: row.excerpt,
-      publishedAt: row.publishedAt!.toISOString(),
-      updatedAt: row.updatedAt.toISOString(),
-      readingTimeMinutes: Math.max(1, Math.round(wordCount / WORDS_PER_MINUTE)),
-      tags: row.postTags.map((pt) => toTag(pt.tag)),
-      author: toAuthor(row.author),
-      cover: row.coverSrc
-        ? {
-            src: row.coverSrc,
-            alt: row.coverAlt ?? row.title,
-            width: row.coverWidth ?? FALLBACK_COVER.width,
-            height: row.coverHeight ?? FALLBACK_COVER.height,
-          }
-        : FALLBACK_COVER,
-      featured: row.featured,
-      seoTitle: row.seoTitle ?? undefined,
-      seoDescription: row.seoDescription ?? undefined,
-    };
-    return { summary, content: row.content, format: row.contentFormat, wordCount };
-  });
+type PostWithRelations = Awaited<ReturnType<typeof findPosts>>[number];
+
+const loadLivePosts = cache(async () => {
+  return (await findPosts(isLive())).map(toRaw);
 });
+
+function toRaw(row: PostWithRelations) {
+  const wordCount = countWords(row.content, row.contentFormat);
+  const summary: PostSummary = {
+    slug: row.slug,
+    title: row.title,
+    excerpt: row.excerpt,
+    // Drafts (admin preview) have no publish date yet; show "now".
+    publishedAt: (row.publishedAt ?? new Date()).toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    readingTimeMinutes: Math.max(1, Math.round(wordCount / WORDS_PER_MINUTE)),
+    tags: row.postTags.map((pt) => toTag(pt.tag)),
+    author: toAuthor(row.author),
+    cover: row.coverSrc
+      ? {
+          src: row.coverSrc,
+          alt: row.coverAlt ?? row.title,
+          width: row.coverWidth ?? FALLBACK_COVER.width,
+          height: row.coverHeight ?? FALLBACK_COVER.height,
+        }
+      : FALLBACK_COVER,
+    featured: row.featured,
+    seoTitle: row.seoTitle ?? undefined,
+    seoDescription: row.seoDescription ?? undefined,
+  };
+  return { summary, content: row.content, format: row.contentFormat, wordCount };
+}
+
+async function toPost(raw: ReturnType<typeof toRaw>): Promise<Post> {
+  // Imported starter posts are Markdown; posts written in the admin editor are sanitized HTML.
+  const { html, toc } = raw.format === "markdown" ? await renderMarkdown(raw.content) : await renderHtml(raw.content);
+  return { ...raw.summary, html, toc, wordCount: raw.wordCount };
+}
 
 export async function getAllPosts(): Promise<PostSummary[]> {
   return (await loadLivePosts()).map((p) => p.summary);
@@ -86,11 +99,14 @@ export async function getAllPosts(): Promise<PostSummary[]> {
 
 export const getPostBySlug = cache(async (slug: string): Promise<Post | null> => {
   const raw = (await loadLivePosts()).find((p) => p.summary.slug === slug);
-  if (!raw) return null;
-  // Phase 2 adds the rich-text editor (format "html"); imported posts are Markdown.
-  const { html, toc } = raw.format === "markdown" ? await renderMarkdown(raw.content) : { html: raw.content, toc: [] };
-  return { ...raw.summary, html, toc, wordCount: raw.wordCount };
+  return raw ? toPost(raw) : null;
 });
+
+/** Any post regardless of status — for the authenticated admin preview only. */
+export async function getPostPreview(id: string): Promise<Post | null> {
+  const [row] = await findPosts(eq(schema.posts.id, id));
+  return row ? toPost(toRaw(row)) : null;
+}
 
 export async function getPostsByTag(tagSlug: string) {
   return (await getAllPosts()).filter((p) => p.tags.some((t) => t.slug === tagSlug));

@@ -48,9 +48,14 @@ export default async function DashboardPage() {
           <h1 className={ui.title}>Welcome, {(user.name ?? user.email).split(" ")[0]}</h1>
           <p className={ui.subtitle}>Here’s what’s happening on the Pixelfork blog.</p>
         </div>
-        <Link href="/admin/posts" className={ui.buttonGhost}>
-          All posts
-        </Link>
+        <div className={ui.inlineForm}>
+          <Link href="/admin/posts" className={ui.buttonGhost}>
+            All posts
+          </Link>
+          <Link href="/admin/posts/new" className={ui.button}>
+            New post
+          </Link>
+        </div>
       </header>
 
       <section className={ui.section} aria-label="Overview">
@@ -81,7 +86,11 @@ export default async function DashboardPage() {
             <tbody>
               {recent.map((post) => (
                 <tr key={post.id}>
-                  <td className={ui.strong}>{post.title}</td>
+                  <td>
+                    <Link href={`/admin/posts/${post.id}`} className={ui.link}>
+                      {post.title || "Untitled"}
+                    </Link>
+                  </td>
                   <td>
                     <StatusBadge status={post.status} publishedAt={post.publishedAt} />
                   </td>

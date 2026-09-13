@@ -5,7 +5,7 @@ import { getAllPosts, paginateHome, parsePageParam } from "@/lib/posts";
 import { buildPageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/config/site";
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const { totalPages } = paginateHome(await getAllPosts(), 1);
@@ -25,5 +25,8 @@ export async function generateMetadata({ params }: PageProps<"/page/[page]">): P
 export default async function PaginatedHomePage({ params }: PageProps<"/page/[page]">) {
   const page = parsePageParam((await params).page);
   if (!page) notFound();
+  // Pages past the end must be real 404s, not empty 200s (soft 404s hurt SEO).
+  const { totalPages } = paginateHome(await getAllPosts(), 1);
+  if (page > totalPages) notFound();
   return <BlogIndex page={page} />;
 }

@@ -33,6 +33,14 @@ Without Google credentials, set `AUTH_DEV_LOGIN=true` in `.env.local` to sign in
 - Roles and deactivation apply on the next request, and every page and server action re-checks the user in the database (`src/lib/auth/dal.ts`).
 - The blog always keeps at least one active admin. Admins can't demote or deactivate themselves.
 
+## Writing posts
+
+*Admin → Posts → New post.* The editor saves sanitized HTML (scripts, styles, event handlers and unknown embeds are stripped;
+YouTube embeds are allowed). Drafts can be previewed at `/admin/preview/<id>`.
+Publishing, updating, unpublishing or deleting a live post refreshes the public site immediately (`revalidatePath`), so new posts
+appear on the home page, tag pages, sitemap, RSS and their own URL right away. If two people edit the same post, the second save is
+rejected instead of overwriting the first.
+
 ## Deploying to Vercel
 
 1. **Import the repo:** vercel.com → *Add New → Project* → import `advme/pixelfork-blog` (the default Next.js settings are fine).
@@ -78,7 +86,7 @@ seed/                  Starter posts and tags imported into an empty database
 ## Roadmap
 
 1. ✅ Foundation: Postgres, Google sign-in, roles, starter content imported
-2. Posts: rich-text editor, drafts, publishing, on-demand revalidation
+2. ✅ Posts: rich-text editor (Tiptap), drafts, preview, publish/unpublish, delete, conflict detection, on-demand revalidation
 3. Media library and tag management
 4. User profiles and public author pages
 5. SEO panel, scheduled publishing, redirects
