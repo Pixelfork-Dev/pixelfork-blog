@@ -55,3 +55,4 @@ next-env.d.ts
 
 # local media uploads (production uses Vercel Blob)
 /public/uploads/
+content/posts/*/.preview/

@@ -10,7 +10,9 @@
     "db:local": "pglite-server --db=.data/pglite --port=54329 --max-connections=30",
     "db:generate": "drizzle-kit generate",
     "db:setup": "tsx scripts/db-setup.mts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "post:publish": "tsx --conditions=react-server scripts/publish-post.mts",
+    "post:preview": "tsx scripts/preview-graphics.mts"
   },
   "dependencies": {
     "@tiptap/extension-image": "^3.31.3",
