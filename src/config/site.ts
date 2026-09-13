@@ -26,8 +26,6 @@ export const siteConfig = {
 
 export const mainNav = [
   { label: "Community", href: `${siteConfig.mainSiteUrl}/community` },
-  { label: "Learn", href: `${siteConfig.mainSiteUrl}/learn` },
-  { label: "Game Jams", href: `${siteConfig.mainSiteUrl}/game-jams` },
   { label: "Docs", href: `${siteConfig.mainSiteUrl}/docs` },
 ] as const;
 
