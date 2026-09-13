@@ -47,7 +47,7 @@ export async function inviteUser(_prev: ActionState, formData: FormData): Promis
     if (await findUserByEmail(email)) return { ok: false, message: `${email} already has access.` };
 
     await db.insert(schema.users).values({ email, role: parsed.data.role, invitedById: me.id });
-    return { ok: true, message: `Invited ${email} as ${parsed.data.role}. They can now sign in with Google.` };
+    return { ok: true, message: `Invited ${email} as ${parsed.data.role}. Ask them to create their account at /blog/admin/register.` };
   });
 }
 
@@ -95,5 +95,23 @@ export async function revokeInvite(userId: string): Promise<ActionState> {
     return deleted.length
       ? { ok: true, message: "Invitation cancelled." }
       : { ok: false, message: "This person has already signed in — deactivate them instead." };
+  });
+}
+
+/**
+ * Forgotten password: clears it and signs the person out everywhere. They set a new one on the
+ * Create account page with the same email (the invitation stays valid).
+ */
+export async function resetPassword(userId: string): Promise<ActionState> {
+  return guarded(async () => {
+    const me = await assertRole("admin");
+    if (userId === me.id) return { ok: false, message: "Change your own password on the Account page." };
+    const target = await db.query.users.findFirst({ where: eq(schema.users.id, userId) });
+    if (!target) return { ok: false, message: "User not found." };
+    await db
+      .update(schema.users)
+      .set({ passwordHash: null, sessionVersion: target.sessionVersion + 1, failedLoginCount: 0, lockedUntil: null })
+      .where(eq(schema.users.id, userId));
+    return { ok: true, message: `Password cleared. ${target.email} can set a new one at /blog/admin/register.` };
   });
 }

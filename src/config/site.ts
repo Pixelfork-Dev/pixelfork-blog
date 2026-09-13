@@ -62,6 +62,7 @@ export const noindex = process.env.NEXT_PUBLIC_NOINDEX === "true";
 
 export function assetPath(path: string) {
   if (!path.startsWith("/") || path.startsWith("//") || !basePath) return path;
+  if (path === "/") return basePath;
   return path === basePath || path.startsWith(`${basePath}/`) ? path : `${basePath}${path}`;
 }
 

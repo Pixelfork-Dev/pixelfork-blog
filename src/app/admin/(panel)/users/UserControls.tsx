@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { changeRole, revokeInvite, setUserDisabled, type ActionState } from "./actions";
+import { changeRole, resetPassword, revokeInvite, setUserDisabled, type ActionState } from "./actions";
 import ui from "../../admin.module.css";
 
 interface Props {
@@ -9,10 +9,11 @@ interface Props {
   role: "admin" | "editor";
   disabled: boolean;
   neverSignedIn: boolean;
+  hasPassword: boolean;
   isSelf: boolean;
 }
 
-export function UserControls({ userId, role, disabled, neverSignedIn, isSelf }: Props) {
+export function UserControls({ userId, role, disabled, neverSignedIn, hasPassword, isSelf }: Props) {
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<ActionState | null>(null);
 
@@ -40,6 +41,16 @@ export function UserControls({ userId, role, disabled, neverSignedIn, isSelf }: 
           <option value="admin">Admin</option>
         </select>
 
+        {hasPassword && !disabled && (
+          <button
+            type="button"
+            className={ui.buttonGhost}
+            disabled={pending}
+            onClick={() => run(() => resetPassword(userId), "Clear this person’s password? They’ll be signed out and must create a new password.")}
+          >
+            Reset password
+          </button>
+        )}
         {neverSignedIn ? (
           <button type="button" className={ui.buttonGhost} disabled={pending} onClick={() => run(() => revokeInvite(userId), "Cancel this invitation?")}>
             Cancel invite

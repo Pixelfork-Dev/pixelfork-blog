@@ -46,6 +46,9 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
                 My profile
               </Link>
             )}
+            <Link href="/admin/account" className={ui.buttonGhost}>
+              Account
+            </Link>
             <a href={assetPath("/")} target="_blank" rel="noreferrer" className={ui.buttonGhost}>
               View blog
             </a>

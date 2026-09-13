@@ -1,6 +1,6 @@
 # Pixelfork Blog
 
-The Pixelfork blog at **https://pixelfork.ai/blog**, built with Next.js 16 (App Router), Postgres (Supabase, Drizzle ORM) and Auth.js.
+The Pixelfork blog at **https://pixelfork.ai/blog**, built with Next.js 16 (App Router), Postgres (Supabase, Drizzle ORM) and Auth.js (email + password).
 It's a separate Vercel project served under the main site: pixelfork.ai rewrites `/blog/*` to it (Next.js multi-zones).
 Public pages are prerendered for SEO. Content is managed in an invite-only admin panel at `/admin`.
 Design source: Figma **Pixelfork MVP**, frame `2898:21926`.
@@ -15,8 +15,7 @@ npm run db:setup             # terminal 2: run migrations and import starter pos
 npm run dev                  # http://localhost:3000/blog · admin at /blog/admin
 ```
 
-Without Google credentials, set `AUTH_DEV_LOGIN=true` in `.env.local` to sign in at `/admin/login` with any invited email
-(or an email in `ADMIN_EMAILS`). The dev login only works in `next dev` and cannot be enabled in a production build.
+First run: open `/blog/admin/register` and create an account with an email listed in `ADMIN_EMAILS`.
 
 | Script | What it does |
 | --- | --- |
@@ -30,8 +29,11 @@ Without Google credentials, set `AUTH_DEV_LOGIN=true` in `.env.local` to sign in
 
 ## Admin & access
 
-- **Invite-only.** A Google account can sign in only if its email was invited in *Admin → Users*,
-  or is listed in `ADMIN_EMAILS` (becomes an admin on first sign-in — use this for the first admin).
+- **Invite-only, email + password.** An admin invites an email in *Admin → Users*; that person creates their account
+  (name + password) at `/blog/admin/register`. Emails in `ADMIN_EMAILS` can register directly as admins (use this for the first admin).
+- Passwords are hashed with scrypt. 5 wrong passwords lock the account for 15 minutes.
+- *Account* changes your password; *Users → Reset password* clears someone's password so they can register again.
+  Both sign the person out on every device.
 - **Roles:** `admin` (everything, including users) and `editor` (content).
 - Roles and deactivation apply on the next request, and every page and server action re-checks the user in the database (`src/lib/auth/dal.ts`).
 - The blog always keeps at least one active admin. Admins can't demote or deactivate themselves.
@@ -77,10 +79,7 @@ Every page, asset, API route and auth callback lives under `/blog`, so the main 
    to verify the server certificate (without it the connection is encrypted but not verified).
 2. **Vercel project:** in the same team as pixelfork.ai → *Add New → Project* → import `advme/pixelfork-blog` (defaults are fine).
    *Storage → Create → Blob* → connect it to the project (adds `BLOB_READ_WRITE_TOKEN`).
-3. **Google OAuth client:** Google Cloud Console → *APIs & Services → Credentials → Create credentials → OAuth client ID* (*Web application*).
-   - Authorized JavaScript origins: `https://pixelfork.ai`, `http://localhost:3000`
-   - Authorized redirect URIs: `https://pixelfork.ai/blog/api/auth/callback/google`, `http://localhost:3000/blog/api/auth/callback/google`
-4. **Environment variables** (Vercel → *Settings → Environment Variables*, Production):
+3. **Environment variables** (Vercel → *Settings → Environment Variables*, Production):
 
    | Variable | Value |
    | --- | --- |
@@ -88,12 +87,11 @@ Every page, asset, API route and auth callback lives under `/blog`, so the main 
    | `AUTH_URL` | `https://pixelfork.ai/blog/api/auth` |
    | `DATABASE_URL` | Supabase transaction pooler URI |
    | `AUTH_SECRET` | `openssl rand -base64 32` |
-   | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | From step 3 |
-   | `ADMIN_EMAILS` | First admin's Google email |
+   | `ADMIN_EMAILS` | First admin's email (registers at /blog/admin/register) |
    | `DATABASE_CA_CERT` | Optional, see step 1 |
 
-5. **Deploy.** The build runs migrations and imports the starter posts once. The app answers at `https://<project>.vercel.app/blog`.
-6. **Main site (pixelfork.ai) rewrites** — send `/blog` to this project. In the main site's `next.config`:
+4. **Deploy.** The build runs migrations and imports the starter posts once. The app answers at `https://<project>.vercel.app/blog`.
+5. **Main site (pixelfork.ai) rewrites** — send `/blog` to this project. In the main site's `next.config`:
 
    ```js
    async rewrites() {
@@ -110,8 +108,9 @@ Every page, asset, API route and auth callback lives under `/blog`, so the main 
    Add `Sitemap: https://pixelfork.ai/blog/sitemap.xml` to the main site's `robots.txt` and submit it in Google Search Console.
    Keep Vercel Deployment Protection off for this project's production deployment, or the rewrite can't reach it.
 
-Sign-in only works on `https://pixelfork.ai/blog` and localhost (Google requires exact redirect URLs). Canonical URLs always point
-to pixelfork.ai/blog, so the `*.vercel.app` URL doesn't compete in search.
+6. **First admin:** open `https://pixelfork.ai/blog/admin/register` and create the account with the `ADMIN_EMAILS` address.
+
+Canonical URLs always point to pixelfork.ai/blog, so the `*.vercel.app` URL doesn't compete in search.
 
 ## Structure
 
@@ -119,7 +118,7 @@ to pixelfork.ai/blog, so the `*.vercel.app` URL doesn't compete in search.
 src/app/(site)/        Public pages (home, posts, tags) with the blog chrome
 src/app/admin/         Admin panel (login, dashboard, posts, users)
 src/app/api/auth/      Auth.js route handler
-src/auth.ts            Auth.js config (Google + dev login)   · src/auth.config.ts shared with src/proxy.ts
+src/auth.ts            Auth.js config (email + password)   · src/auth.config.ts shared with src/proxy.ts
 src/db/                Drizzle schema and client               · drizzle/ SQL migrations
 src/lib/posts.ts       Public content repository (the only code public pages use to read content)
 src/lib/auth/          Access rules and the authorization data access layer
@@ -136,7 +135,7 @@ seed/                  Starter posts and tags imported into an empty database
 
 ## Roadmap
 
-1. ✅ Foundation: Postgres, Google sign-in, roles, starter content imported
+1. ✅ Foundation: Postgres, email + password sign-in, roles, starter content imported
 2. ✅ Posts: rich-text editor (Tiptap), drafts, preview, publish/unpublish, delete, conflict detection, on-demand revalidation
 3. ✅ Media library (uploads resized to WebP, alt text, picker in the editor, in-use protection) and tag management
 4. ✅ Author profiles (admin) and public author pages with Person/ProfilePage JSON-LD, bylines and author boxes

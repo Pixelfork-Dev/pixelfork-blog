@@ -13,7 +13,7 @@ export default auth((req) => {
   // Auth.js re-creates the request (with AUTH_URL's origin), so the path may or may not include the base path.
   const { pathname, origin } = req.nextUrl;
   const path = basePath && pathname.startsWith(`${basePath}/`) ? pathname.slice(basePath.length) : pathname;
-  if (!req.auth && path !== "/admin/login") {
+  if (!req.auth && path !== "/admin/login" && path !== "/admin/register") {
     return NextResponse.redirect(new URL(`${basePath}/admin/login`, origin));
   }
   // Signed-in visitors on /admin/login are handled by the page itself: a cookie alone doesn't prove

@@ -1,49 +1,32 @@
 import NextAuth from "next-auth";
-import type { Provider } from "next-auth/providers";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
 import { authConfig } from "./auth.config";
-import { findUserByEmail, resolveSignIn } from "./lib/auth/access";
-
-/** Password-less email login for local testing only. Can never be enabled in a production build. */
-export const devLoginEnabled = process.env.NODE_ENV === "development" && process.env.AUTH_DEV_LOGIN === "true";
-
-const providers: Provider[] = [Google];
-
-if (devLoginEnabled) {
-  providers.push(
-    Credentials({
-      id: "dev",
-      name: "Dev login",
-      credentials: { email: { label: "Email", type: "email" } },
-      async authorize(credentials) {
-        const email = typeof credentials?.email === "string" ? credentials.email : "";
-        if (!email) return null;
-        const user = await resolveSignIn({ email });
-        return user ? { email: user.email, name: user.name, image: user.image } : null;
-      },
-    }),
-  );
-}
+import { findUserByEmail, verifySignIn } from "./lib/auth/access";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  providers,
+  providers: [
+    Credentials({
+      id: "password",
+      name: "Email and password",
+      credentials: { email: { label: "Email", type: "email" }, password: { label: "Password", type: "password" } },
+      async authorize(credentials) {
+        const email = typeof credentials?.email === "string" ? credentials.email : "";
+        const password = typeof credentials?.password === "string" ? credentials.password : "";
+        if (!email || !password || password.length > 200) return null;
+        const user = await verifySignIn(email, password);
+        return user ? { id: user.id, email: user.email, name: user.name } : null;
+      },
+    }),
+  ],
   callbacks: {
     ...authConfig.callbacks,
-    async signIn({ account, profile, user }) {
-      if (account?.provider === "google") {
-        if (!profile?.email || profile.email_verified !== true) return false;
-        return Boolean(await resolveSignIn({ email: profile.email, name: profile.name, image: user.image }));
-      }
-      // The dev provider already ran resolveSignIn in authorize().
-      return account?.provider === "dev" && devLoginEnabled;
-    },
-    async jwt({ token, account, user }) {
-      // On sign-in, store our database user id; role and status are re-checked on every admin request.
-      if (account && user?.email) {
+    async jwt({ token, user }) {
+      // On sign-in, store the database user id and session version; both are re-checked on every admin request.
+      if (user?.email) {
         const row = await findUserByEmail(user.email);
         token.uid = row?.id;
+        token.sv = row?.sessionVersion;
       }
       return token;
     },

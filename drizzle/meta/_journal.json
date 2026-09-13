@@ -29,6 +29,13 @@
       "when": 1789265362382,
       "tag": "0003_seo_redirects",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789299467079,
+      "tag": "0004_password_auth",
+      "breakpoints": true
     }
   ]
 }

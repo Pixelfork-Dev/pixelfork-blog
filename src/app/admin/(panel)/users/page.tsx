@@ -27,7 +27,7 @@ export default async function UsersPage() {
         <div>
           <h1 className={ui.title}>Users</h1>
           <p className={ui.subtitle}>
-            Invite-only. Admins manage people and everything else; editors manage content.
+            Invite-only. Invited people create their account (email + password) at /blog/admin/register. Admins manage people and everything else; editors manage content.
           </p>
         </div>
       </header>
@@ -77,10 +77,10 @@ export default async function UsersPage() {
                   <td>
                     {u.disabledAt ? (
                       <span className={`${ui.badge} ${ui.badgeDisabled}`}>deactivated</span>
-                    ) : u.lastLoginAt ? (
+                    ) : u.passwordHash ? (
                       <span className={`${ui.badge} ${ui.badgePublished}`}>active</span>
                     ) : (
-                      <span className={ui.badge}>invited</span>
+                      <span className={ui.badge}>{u.lastLoginAt ? "no password" : "invited"}</span>
                     )}
                   </td>
                   <td className={`${ui.muted} ${ui.nowrap}`}>{u.lastLoginAt ? formatDate(u.lastLoginAt.toISOString()) : "Never"}</td>
@@ -90,6 +90,7 @@ export default async function UsersPage() {
                       role={u.role}
                       disabled={Boolean(u.disabledAt)}
                       neverSignedIn={!u.lastLoginAt}
+                      hasPassword={Boolean(u.passwordHash)}
                       isSelf={u.id === me.id}
                     />
                   </td>

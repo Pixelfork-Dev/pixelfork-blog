@@ -76,7 +76,7 @@ export function AuthorForm({ initial, isOwnProfile, linkedEmail, postCount, goog
           </button>
           {googleImage && author.avatarUrl !== googleImage && (
             <button type="button" className={ui.buttonGhost} onClick={() => set("avatarUrl", googleImage)}>
-              Use Google photo
+              Use account photo
             </button>
           )}
           {author.avatarUrl && (

@@ -50,6 +50,12 @@ export const users = pgTable(
     role: userRole("role").notNull().default("editor"),
     authorId: uuid("author_id").references(() => authors.id, { onDelete: "set null" }),
     invitedById: uuid("invited_by_id"),
+    /** scrypt hash; null until the invited person registers (or after an admin resets the password). */
+    passwordHash: text("password_hash"),
+    /** Bumped on password change/reset; sessions issued with an older version are rejected. */
+    sessionVersion: integer("session_version").notNull().default(1),
+    failedLoginCount: integer("failed_login_count").notNull().default(0),
+    lockedUntil: timestamp("locked_until", { withTimezone: true }),
     lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
     disabledAt: timestamp("disabled_at", { withTimezone: true }),
     ...timestamps,

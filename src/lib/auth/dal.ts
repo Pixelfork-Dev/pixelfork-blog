@@ -17,7 +17,8 @@ export const getCurrentUser = cache(async () => {
   const id = session?.user?.id;
   if (!id) return null;
   const user = await db.query.users.findFirst({ where: eq(schema.users.id, id) });
-  return user && !user.disabledAt ? user : null;
+  // A password change or reset bumps session_version, which signs out sessions issued before it.
+  return user && !user.disabledAt && user.passwordHash && session.user.sv === user.sessionVersion ? user : null;
 });
 
 /** For pages: send signed-out visitors to the login screen. */

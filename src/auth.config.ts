@@ -14,6 +14,7 @@ export const authConfig = {
   callbacks: {
     session({ session, token }) {
       if (session.user && typeof token.uid === "string") session.user.id = token.uid;
+      if (session.user && typeof token.sv === "number") session.user.sv = token.sv;
       return session;
     },
   },
