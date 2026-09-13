@@ -43,4 +43,4 @@ Upload builds with time to spare. Servers get slow at the deadline, and web buil
 
 > A finished small game teaches you more than an unfinished big one.
 
-Looking for your next jam? Browse upcoming [Pixelfork Game Jams](https://pixelfork.com/game-jams).
+Looking for your next jam? Browse upcoming [Pixelfork Game Jams](https://pixelfork.ai/game-jams).

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageBand } from "@/components/PageBand";
 import { PostGrid } from "@/components/PostGrid";
+import { SiteChrome } from "@/components/SiteChrome";
 import { getAllPosts } from "@/lib/posts";
 import styles from "./not-found.module.css";
 
@@ -14,7 +15,7 @@ export default async function NotFound() {
   const latest = (await getAllPosts()).slice(0, 3);
 
   return (
-    <>
+    <SiteChrome>
       <PageBand />
       <section className={`${styles.hero} dash-bottom`}>
         <div className={`container ${styles.inner}`}>
@@ -27,6 +28,6 @@ export default async function NotFound() {
         </div>
       </section>
       <PostGrid posts={latest} />
-    </>
+    </SiteChrome>
   );
 }

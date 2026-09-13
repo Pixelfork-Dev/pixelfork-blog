@@ -75,4 +75,4 @@ Press **Play** and the cube spins. Because `degreesPerSecond` is serialized, you
 
 > The fastest way to learn an engine is to finish something small. Pick a one-screen game and ship it this week.
 
-Want to skip the setup and start creating right away? You can build and share games in the browser with [Pixelfork](https://pixelfork.com).
+Want to skip the setup and start creating right away? You can build and share games in the browser with [Pixelfork](https://pixelfork.ai).

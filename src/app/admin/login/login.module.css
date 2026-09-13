@@ -1,0 +1,51 @@
+.page {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 24px;
+  background-image:
+    linear-gradient(to bottom, var(--color-line) 50%, transparent 50%),
+    linear-gradient(to bottom, var(--color-line) 50%, transparent 50%);
+  background-size:
+    1px 8px,
+    1px 8px;
+  background-repeat: repeat-y;
+  background-position:
+    calc(50% - 220px) 0,
+    calc(50% + 220px) 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: min(100%, 400px);
+  padding: 32px;
+  border: 1px dashed var(--color-line);
+  background: var(--color-bg);
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.text {
+  margin-top: 6px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.full {
+  width: 100%;
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.dev {
+  padding-top: 20px;
+  border-top: 1px dashed var(--color-line);
+}

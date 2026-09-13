@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TagIndex } from "@/components/TagIndex";
-import { getActiveTags, getPostsByTag, paginate, parsePageParam } from "@/lib/posts";
+import { getActiveTags, getPostsByTag, getTagBySlug, paginate, parsePageParam } from "@/lib/posts";
 import { buildPageMetadata } from "@/lib/seo";
-import { getTagBySlug } from "@/lib/taxonomy";
 
 /**
  * Handles both /tag/[slug] and /tag/[slug]/page/[n] in one route, so every tag always
@@ -30,7 +29,7 @@ function parsePagination(segments: string[] | undefined) {
 
 export async function generateMetadata({ params }: PageProps<"/tag/[slug]/[[...pagination]]">): Promise<Metadata> {
   const { slug, pagination } = await params;
-  const tag = getTagBySlug(slug);
+  const tag = await getTagBySlug(slug);
   const page = parsePagination(pagination);
   if (!tag || !page) return {};
   return buildPageMetadata({
@@ -42,7 +41,7 @@ export async function generateMetadata({ params }: PageProps<"/tag/[slug]/[[...p
 
 export default async function TagPage({ params }: PageProps<"/tag/[slug]/[[...pagination]]">) {
   const { slug, pagination } = await params;
-  const tag = getTagBySlug(slug);
+  const tag = await getTagBySlug(slug);
   const page = parsePagination(pagination);
   if (!tag || !page) notFound();
   return <TagIndex tag={tag} page={page} />;

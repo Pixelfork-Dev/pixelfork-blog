@@ -6,8 +6,8 @@ export const siteConfig = {
   name: "Pixelfork Blog",
   shortName: "Pixelfork",
   // Set NEXT_PUBLIC_SITE_URL in production (no trailing slash).
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://blog.pixelfork.com").replace(/\/$/, ""),
-  mainSiteUrl: "https://pixelfork.com",
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://blog.pixelfork.ai").replace(/\/$/, ""),
+  mainSiteUrl: "https://pixelfork.ai",
   title: "Pixelfork Blog — Game Development Tutorials, Tips & Insights",
   description:
     "Tutorials, pro tips and insights on game development: Unity, Three.js, 2D and 3D games, mobile game dev, monetization and distribution — from the Pixelfork team.",

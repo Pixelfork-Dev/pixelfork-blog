@@ -49,3 +49,6 @@ next-env.d.ts
 
 # Source art pack (only the exported sheets in public/sprites are used)
 /2D-Pixel-Art-Character-Template-2/
+
+# local database (PGlite)
+/.data/

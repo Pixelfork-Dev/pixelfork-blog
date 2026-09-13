@@ -179,15 +179,13 @@ export function postJsonLd(post: Post) {
     url,
     headline: post.title,
     description: post.excerpt,
-    image: [
-      {
-        "@type": "ImageObject",
-        url: absoluteUrl(post.cover.src),
-        width: post.cover.width,
-        height: post.cover.height,
-      },
-      absoluteUrl(`/posts/${post.slug}/opengraph-image`),
-    ],
+    // The generated social card is linked via og:image metadata (its URL carries a build hash).
+    image: {
+      "@type": "ImageObject",
+      url: absoluteUrl(post.cover.src),
+      width: post.cover.width,
+      height: post.cover.height,
+    },
     datePublished: post.publishedAt,
     dateModified: post.updatedAt,
     wordCount: post.wordCount,

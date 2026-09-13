@@ -1,0 +1,150 @@
+.shell {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100vh;
+  padding: 24px 16px;
+  background-image: linear-gradient(to bottom, var(--color-line) 50%, transparent 50%);
+  background-size: 1px 8px;
+  background-repeat: repeat-y;
+  background-position: right top;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 8px;
+}
+
+.brandTag {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+  padding: 0;
+}
+
+.navHeading {
+  margin: 20px 8px 6px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.navLink {
+  display: block;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--color-nav);
+  font-size: 15px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+a.navLink:hover {
+  color: var(--color-text);
+}
+
+.navLink[aria-current="page"] {
+  border: 1px dashed var(--color-line);
+  color: var(--color-text);
+  box-shadow: inset 2px 0 0 var(--color-brand);
+}
+
+.navDisabled {
+  color: var(--color-text-muted);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.account {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+  padding: 16px 8px 0;
+  background-image: linear-gradient(to right, var(--color-line) 50%, transparent 50%);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+  background-position: left top;
+}
+
+.accountText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.accountText > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role {
+  text-transform: capitalize;
+}
+
+.accountActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.content {
+  min-width: 0;
+}
+
+@media (max-width: 899px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    gap: 16px;
+    padding: 16px;
+    background-image: linear-gradient(to right, var(--color-line) 50%, transparent 50%);
+    background-size: 8px 1px;
+    background-repeat: repeat-x;
+    background-position: left bottom;
+  }
+
+  .nav ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .navHeading,
+  .navDisabled {
+    display: none;
+  }
+
+  .account {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0;
+  }
+}
