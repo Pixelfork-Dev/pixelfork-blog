@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { requireUser } from "@/lib/auth/dal";
+import { hasRole, requireUser } from "@/lib/auth/dal";
 import { AuthorForm } from "../AuthorForm";
 import ui from "../../../admin.module.css";
 
@@ -12,6 +12,8 @@ export const metadata: Metadata = { title: "Author profile" };
 export default async function AuthorEditPage({ params }: PageProps<"/admin/authors/[id]">) {
   const me = await requireUser();
   const { id } = await params;
+  // Contributors can only edit their own byline.
+  if (!hasRole(me, "editor") && id !== me.authorId) notFound();
 
   if (id === "new") {
     return (

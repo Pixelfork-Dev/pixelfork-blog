@@ -23,7 +23,7 @@ const timestamps = {
 /* ---------------------------------- People ---------------------------------- */
 
 /** admin: everything incl. users & settings. editor: all content. */
-export const userRole = pgEnum("user_role", ["admin", "editor"]);
+export const userRole = pgEnum("user_role", ["admin", "editor", "contributor"]);
 
 /** Public byline shown on articles and (later) author pages. Not every author needs a login. */
 export const authors = pgTable("authors", {
@@ -106,6 +106,10 @@ export const posts = pgTable(
       .references(() => authors.id, { onDelete: "restrict" }),
     createdById: uuid("created_by_id").references(() => users.id, { onDelete: "set null" }),
     updatedById: uuid("updated_by_id").references(() => users.id, { onDelete: "set null" }),
+    /** Set when a contributor submits the draft for review; cleared when it's published or sent back. */
+    reviewRequestedAt: timestamp("review_requested_at", { withTimezone: true }),
+    /** Note from the reviewer when a submission is sent back to its author. */
+    reviewNote: text("review_note"),
     /** Set when the post was created through the Publishing API. */
     createdByTokenId: uuid("created_by_token_id").references(() => apiTokens.id, { onDelete: "set null" }),
     publishedAt: timestamp("published_at", { withTimezone: true }),

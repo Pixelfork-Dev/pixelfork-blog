@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { asc, count, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
-import { requireUser } from "@/lib/auth/dal";
+import { requireRolePage } from "@/lib/auth/dal";
 import { TagManager } from "./TagManager";
 import ui from "../../admin.module.css";
 
 export const metadata: Metadata = { title: "Tags" };
 
 export default async function TagsPage() {
-  await requireUser();
+  await requireRolePage("editor");
   const rows = await db
     .select({
       id: schema.tags.id,

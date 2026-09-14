@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { desc } from "drizzle-orm";
 import { db, schema } from "@/db";
-import { requireUser } from "@/lib/auth/dal";
+import { requireRolePage } from "@/lib/auth/dal";
 import { RedirectManager } from "./RedirectManager";
 import ui from "../../admin.module.css";
 
 export const metadata: Metadata = { title: "Redirects" };
 
 export default async function RedirectsPage() {
-  await requireUser();
+  await requireRolePage("editor");
   const rows = await db.select().from(schema.redirects).orderBy(desc(schema.redirects.createdAt));
 
   return (

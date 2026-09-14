@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireUser } from "@/lib/auth/dal";
+import { hasRole, requireUser } from "@/lib/auth/dal";
 import { listMedia } from "./actions";
 import { MediaLibrary } from "./MediaLibrary";
 import ui from "../../admin.module.css";
@@ -7,7 +7,7 @@ import ui from "../../admin.module.css";
 export const metadata: Metadata = { title: "Media" };
 
 export default async function MediaPage() {
-  await requireUser();
+  const user = await requireUser();
   const items = await listMedia();
 
   return (
@@ -19,7 +19,7 @@ export default async function MediaPage() {
         </div>
       </header>
       <section className={ui.section}>
-        <MediaLibrary mode="page" initialItems={items} />
+        <MediaLibrary mode="page" initialItems={items} canDelete={hasRole(user, "editor")} />
       </section>
     </>
   );

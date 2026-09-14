@@ -148,3 +148,13 @@ a.navLink:hover {
     margin-top: 0;
   }
 }
+
+.navCount {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--color-brand);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}

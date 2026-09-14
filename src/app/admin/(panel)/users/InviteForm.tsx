@@ -25,6 +25,7 @@ export function InviteForm() {
           Role
         </label>
         <select id="invite-role" name="role" defaultValue="editor" className={ui.select}>
+          <option value="contributor">Contributor</option>
           <option value="editor">Editor</option>
           <option value="admin">Admin</option>
         </select>

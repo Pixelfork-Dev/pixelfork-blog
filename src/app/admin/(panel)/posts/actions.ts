@@ -5,10 +5,11 @@ import { z } from "zod";
 import { db, schema } from "@/db";
 import { recordMove, releasePath } from "@/lib/admin/redirects";
 import { revalidatePublicSite } from "@/lib/admin/revalidate";
-import { assertRole, AuthorizationError } from "@/lib/auth/dal";
+import { assertRole, AuthorizationError, hasRole } from "@/lib/auth/dal";
 import { isEmptyHtml, sanitizePostHtml } from "@/lib/sanitize";
 
-export type SaveIntent = "save" | "publish" | "schedule" | "unpublish";
+/** "submit" is the contributor's way to hand a draft to an editor; the others need editor rights. */
+export type SaveIntent = "save" | "submit" | "publish" | "schedule" | "unpublish";
 
 export interface PostInput {
   id?: string;
@@ -39,7 +40,15 @@ export interface SaveResult {
   ok: boolean;
   message: string;
   fieldErrors?: Partial<Record<keyof PostInput, string>>;
-  post?: { id: string; slug: string; status: "draft" | "scheduled" | "published"; updatedAt: string; publishedAt: string | null };
+  post?: {
+    id: string;
+    slug: string;
+    status: "draft" | "scheduled" | "published";
+    updatedAt: string;
+    publishedAt: string | null;
+    reviewRequestedAt: string | null;
+    reviewNote: string | null;
+  };
 }
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -80,7 +89,12 @@ function fieldErrors(error: z.ZodError): SaveResult["fieldErrors"] {
 
 export async function savePost(input: PostInput, intent: SaveIntent): Promise<SaveResult> {
   try {
-    const user = await assertRole("editor");
+    const user = await assertRole("contributor");
+    const isReviewer = hasRole(user, "editor");
+    if (!isReviewer && intent !== "save" && intent !== "submit") {
+      return { ok: false, message: "Contributors can save drafts and submit them for review. An editor publishes them." };
+    }
+    if (isReviewer && intent === "submit") return { ok: false, message: "Editors can publish directly." };
     const parsed = baseSchema.safeParse(input);
     if (!parsed.success) {
       return { ok: false, message: "Please fix the highlighted fields.", fieldErrors: fieldErrors(parsed.error) };
@@ -90,6 +104,18 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
 
     const existing = data.id ? await db.query.posts.findFirst({ where: eq(schema.posts.id, data.id) }) : undefined;
     if (data.id && !existing) return { ok: false, message: "This post no longer exists." };
+
+    if (!isReviewer) {
+      if (existing && existing.createdById !== user.id) return { ok: false, message: "You can only edit your own posts." };
+      if (existing && existing.status !== "draft") return { ok: false, message: "This post is live. Ask an editor to change it." };
+      if (existing?.reviewRequestedAt) {
+        return { ok: false, message: "This post is waiting for review. You can edit it again if an editor sends it back." };
+      }
+      if (!user.authorId) return { ok: false, message: "Your account has no author profile yet. Ask an admin." };
+      // Contributors always write under their own byline and can't feature posts.
+      data.authorId = user.authorId;
+      data.featured = false;
+    }
 
     if (existing && data.loadedUpdatedAt && existing.updatedAt.getTime() > new Date(data.loadedUpdatedAt).getTime() + 1) {
       return {
@@ -122,7 +148,7 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
     const willBeLive = nextStatus !== "draft" && Boolean(publishedAt && publishedAt <= now);
     const willBePublic = nextStatus !== "draft"; // live now or scheduled
     if (coverAltMissing(data)) errors.coverAlt = "Describe the cover image for accessibility and image search.";
-    if (willBePublic) {
+    if (willBePublic || intent === "submit") {
       if (data.excerpt.length < 40) errors.excerpt = "Published posts need an excerpt of at least 40 characters (used for SEO).";
       if (isEmptyHtml(content)) errors.content = "Published posts need some content.";
     }
@@ -163,6 +189,9 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
       authorId: data.authorId,
       updatedById: user.id,
       publishedAt,
+      // Submitting starts a review; publishing or scheduling ends it.
+      ...(intent === "submit" ? { reviewRequestedAt: now, reviewNote: null } : {}),
+      ...(willBePublic ? { reviewRequestedAt: null, reviewNote: null } : {}),
     };
 
     const saved = await db.transaction(async (tx) => {
@@ -186,7 +215,9 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
 
     const slugMoved = wasLive && existing && existing.slug !== saved.slug;
     const message =
-      intent === "schedule"
+      intent === "submit"
+        ? "Submitted for review. An editor will publish it or send it back with notes."
+        : intent === "schedule"
         ? `Scheduled for ${publishedAt!.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC.`
         : intent === "publish"
           ? wasLive
@@ -211,6 +242,8 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
         status: saved.status,
         updatedAt: saved.updatedAt.toISOString(),
         publishedAt: saved.publishedAt?.toISOString() ?? null,
+        reviewRequestedAt: saved.reviewRequestedAt?.toISOString() ?? null,
+        reviewNote: saved.reviewNote,
       },
     };
   } catch (e) {
@@ -238,5 +271,26 @@ export async function deletePost(id: string): Promise<{ ok: boolean; message: st
     if (e instanceof AuthorizationError) return { ok: false, message: e.message };
     console.error(e);
     return { ok: false, message: "Something went wrong while deleting." };
+  }
+}
+
+/** Editors send a submitted draft back to its contributor with a note. */
+export async function returnForChanges(id: string, note: string): Promise<{ ok: boolean; message: string; updatedAt?: string }> {
+  try {
+    await assertRole("editor");
+    const clean = z.string().trim().min(3, "Add a short note so the author knows what to change.").max(1000).safeParse(note);
+    if (!clean.success) return { ok: false, message: clean.error.issues[0].message };
+    const [row] = await db
+      .update(schema.posts)
+      .set({ reviewRequestedAt: null, reviewNote: clean.data })
+      .where(and(eq(schema.posts.id, z.uuid().parse(id)), eq(schema.posts.status, "draft")))
+      .returning({ updatedAt: schema.posts.updatedAt });
+    return row
+      ? { ok: true, message: "Sent back to the author with your note.", updatedAt: row.updatedAt.toISOString() }
+      : { ok: false, message: "Only drafts can be sent back." };
+  } catch (e) {
+    if (e instanceof AuthorizationError) return { ok: false, message: e.message };
+    console.error(e);
+    return { ok: false, message: "Something went wrong." };
   }
 }

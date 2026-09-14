@@ -3,7 +3,7 @@
 import { desc, eq, ilike, or } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { assertRole, AuthorizationError } from "@/lib/auth/dal";
+import { assertRole, AuthorizationError, hasRole } from "@/lib/auth/dal";
 import { removeImage } from "@/lib/media/storage";
 
 export interface MediaItem {
@@ -31,7 +31,7 @@ function toItem(row: typeof schema.media.$inferSelect): MediaItem {
 }
 
 export async function listMedia(query = ""): Promise<MediaItem[]> {
-  await assertRole("editor");
+  await assertRole("contributor");
   const q = query.trim().slice(0, 100);
   const rows = await db
     .select()
@@ -44,9 +44,12 @@ export async function listMedia(query = ""): Promise<MediaItem[]> {
 
 export async function updateMediaAlt(id: string, alt: string): Promise<{ ok: boolean; message: string }> {
   try {
-    await assertRole("editor");
+    const user = await assertRole("contributor");
     const clean = z.string().trim().max(300, "Keep alt text under 300 characters.").safeParse(alt);
     if (!clean.success) return { ok: false, message: clean.error.issues[0].message };
+    const row = await db.query.media.findFirst({ columns: { uploadedById: true }, where: eq(schema.media.id, z.uuid().parse(id)) });
+    if (!row) return { ok: false, message: "This image no longer exists." };
+    if (!hasRole(user, "editor") && row.uploadedById !== user.id) return { ok: false, message: "You can only edit images you uploaded." };
     await db.update(schema.media).set({ alt: clean.data }).where(eq(schema.media.id, z.uuid().parse(id)));
     return { ok: true, message: "Alt text saved." };
   } catch (e) {
@@ -59,7 +62,7 @@ export async function updateMediaAlt(id: string, alt: string): Promise<{ ok: boo
 /** Delete an image unless a post still uses it (as the cover or inside the article). */
 export async function deleteMedia(id: string): Promise<{ ok: boolean; message: string }> {
   try {
-    await assertRole("editor");
+    await assertRole("editor"); // contributors can't delete media
     const row = await db.query.media.findFirst({ where: eq(schema.media.id, z.uuid().parse(id)) });
     if (!row) return { ok: false, message: "This image no longer exists." };
 

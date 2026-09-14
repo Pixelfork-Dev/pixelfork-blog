@@ -38,7 +38,12 @@ First run: open `/blog/admin/register` and create an account with an email liste
 - Passwords are hashed with scrypt. 5 wrong passwords lock the account for 15 minutes.
 - *Account* changes your password; *Users → Reset password* clears someone's password so they can register again.
   Both sign the person out on every device.
-- **Roles:** `admin` (everything, including users) and `editor` (content).
+- **Roles:**
+  - `admin`: everything, including users and API tokens.
+  - `editor`: all content: publish, review submissions, tags, media, authors, redirects.
+  - `contributor`: writes their own drafts, uploads images, picks existing tags and **submits drafts for review**. Can't publish,
+    delete, manage tags/authors/redirects, or see other people's posts. A submitted draft is locked until an editor publishes it or
+    sends it back with a note. Editors see submissions under *Dashboard → Waiting for review* and a badge on *Posts*.
 - Roles and deactivation apply on the next request, and every page and server action re-checks the user in the database (`src/lib/auth/dal.ts`).
 - The blog always keeps at least one active admin. Admins can't demote or deactivate themselves.
 

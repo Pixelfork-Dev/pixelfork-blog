@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { asc, count, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
-import { requireUser } from "@/lib/auth/dal";
+import { requireRolePage } from "@/lib/auth/dal";
 import ui from "../../admin.module.css";
 
 export const metadata: Metadata = { title: "Authors" };
 
 export default async function AuthorsPage() {
-  const me = await requireUser();
+  const me = await requireRolePage("editor");
   const rows = await db
     .select({
       id: schema.authors.id,

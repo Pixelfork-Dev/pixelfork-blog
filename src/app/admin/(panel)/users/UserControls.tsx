@@ -6,7 +6,7 @@ import ui from "../../admin.module.css";
 
 interface Props {
   userId: string;
-  role: "admin" | "editor";
+  role: "admin" | "editor" | "contributor";
   disabled: boolean;
   neverSignedIn: boolean;
   hasPassword: boolean;
@@ -37,6 +37,7 @@ export function UserControls({ userId, role, disabled, neverSignedIn, hasPasswor
           disabled={pending || disabled}
           onChange={(e) => run(() => changeRole(userId, e.target.value))}
         >
+          <option value="contributor">Contributor</option>
           <option value="editor">Editor</option>
           <option value="admin">Admin</option>
         </select>

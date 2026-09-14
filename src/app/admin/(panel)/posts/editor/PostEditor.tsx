@@ -7,7 +7,7 @@ import { siteConfig } from "@/config/site";
 import { slugify } from "@/lib/slug";
 import type { MediaItem } from "../../media/actions";
 import { MediaPicker } from "../../media/MediaPicker";
-import { deletePost, savePost, type PostInput, type SaveIntent, type SaveResult } from "../actions";
+import { deletePost, returnForChanges, savePost, type PostInput, type SaveIntent, type SaveResult } from "../actions";
 import { RichTextEditor } from "./RichTextEditor";
 import { runSeoChecks, seoScore } from "./seoChecks";
 import ui from "../../../admin.module.css";
@@ -15,6 +15,11 @@ import styles from "./editor.module.css";
 
 export interface EditorPost extends Omit<PostInput, "loadedUpdatedAt"> {
   status: "draft" | "scheduled" | "published";
+  createdById: string | null;
+  /** Set while a contributor's draft waits for an editor. */
+  reviewRequestedAt: string | null;
+  /** Reviewer's note when the draft was sent back. */
+  reviewNote: string | null;
   updatedAt: string | null;
   publishedAt: string | null;
 }
@@ -23,11 +28,13 @@ interface Props {
   post: EditorPost;
   tags: { id: string; name: string }[];
   authors: { id: string; name: string }[];
+  /** Editors and admins publish and review; contributors save drafts and submit them. */
+  canReview: boolean;
 }
 
 const COUNTS = { excerpt: [120, 160], seoTitle: [30, 60], seoDescription: [120, 160] } as const;
 
-export function PostEditor({ post: initial, tags, authors }: Props) {
+export function PostEditor({ post: initial, tags, authors, canReview }: Props) {
   const router = useRouter();
   const [post, setPost] = useState(initial);
   const [saved, setSaved] = useState(initial);
@@ -38,11 +45,12 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
     const notice = searchParams.get("notice");
     if (notice === "published") return { ok: true, message: "Post published — it’s live now." };
     if (notice === "draft") return { ok: true, message: "Draft saved." };
+    if (notice === "submitted") return { ok: true, message: "Submitted for review. An editor will publish it or send it back with notes." };
     if (notice === "scheduled") return { ok: true, message: "Post scheduled." };
     return null;
   });
   const [pending, startTransition] = useTransition();
-  const [pendingIntent, setPendingIntent] = useState<SaveIntent | "delete" | null>(null);
+  const [pendingIntent, setPendingIntent] = useState<SaveIntent | "delete" | "return" | null>(null);
   // One picker for both the cover and in-article images; `resolvePick` receives the chosen image.
   const [picker, setPicker] = useState<{ title: string; resolve: (item: MediaItem | null) => void } | null>(null);
   const pickImage = useCallback(
@@ -101,18 +109,49 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
         setResult(res);
         setPendingIntent(null);
         if (res.ok && res.post) {
-          const next = { ...post, id: res.post.id, slug: res.post.slug, status: res.post.status, updatedAt: res.post.updatedAt, publishedAt: res.post.publishedAt };
+          const next = {
+            ...post,
+            id: res.post.id,
+            slug: res.post.slug,
+            status: res.post.status,
+            updatedAt: res.post.updatedAt,
+            publishedAt: res.post.publishedAt,
+            reviewRequestedAt: res.post.reviewRequestedAt,
+            reviewNote: res.post.reviewNote,
+          };
           setPost(next);
           setSaved(next);
           setSlugTouched(true);
           setShowSchedule(false);
-          if (!post.id) router.replace(`/admin/posts/${res.post.id}?notice=${res.post.status}`);
+          if (!post.id) router.replace(`/admin/posts/${res.post.id}?notice=${intent === "submit" ? "submitted" : res.post.status}`);
           else router.refresh();
         }
       });
     },
     [pending, post, publishAt, router],
   );
+
+  const inReview = Boolean(post.reviewRequestedAt);
+  // Contributors can't change a draft while it waits for review.
+  const locked = !canReview && inReview;
+
+  const sendBack = () => {
+    if (!post.id) return;
+    const note = window.prompt("What should the author change? They'll see this note in the editor.");
+    if (!note) return;
+    setPendingIntent("return");
+    startTransition(async () => {
+      const res = await returnForChanges(post.id!, note);
+      setResult(res);
+      setPendingIntent(null);
+      if (res.ok) {
+        const next = { ...post, reviewRequestedAt: null, reviewNote: note.trim(), updatedAt: res.updatedAt ?? post.updatedAt };
+        setPost(next);
+        setSaved(next);
+        router.refresh();
+      }
+    });
+  };
 
   const remove = () => {
     if (!post.id || !window.confirm(`Delete “${post.title || "Untitled"}”? This can’t be undone.`)) return;
@@ -134,7 +173,7 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        run("save");
+        if (!locked) run("save");
       }
     };
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -146,7 +185,7 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("beforeunload", onBeforeUnload);
     };
-  }, [dirty, run]);
+  }, [dirty, locked, run]);
 
   const openPreview = () => {
     if (!post.id) return;
@@ -204,13 +243,41 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
       <aside className={styles.sidebar} aria-label="Post settings">
         <Panel title="Publish">
           <div className={styles.statusRow}>
-            <span className={`${ui.badge} ${isLive ? ui.badgePublished : isScheduled ? ui.badgeScheduled : ui.badgeDraft}`}>
-              {isLive ? "published" : isScheduled ? "scheduled" : "draft"}
+            <span className={`${ui.badge} ${isLive ? ui.badgePublished : isScheduled || inReview ? ui.badgeScheduled : ui.badgeDraft}`}>
+              {isLive ? "published" : isScheduled ? "scheduled" : inReview ? "in review" : "draft"}
             </span>
             {post.publishedAt && post.status !== "draft" && <span className={ui.muted}>{formatWhen(post.publishedAt)}</span>}
           </div>
+          {post.reviewNote && !inReview && !isLive && (
+            <p className={`${ui.notice} ${ui.noticeError}`}>
+              <strong>Changes requested:</strong> {post.reviewNote}
+            </p>
+          )}
+          {inReview && (
+            <p className={`${ui.notice} ${ui.muted}`}>
+              {canReview
+                ? "A contributor submitted this draft. Publish it, or send it back with a note."
+                : `Submitted for review ${formatWhen(post.reviewRequestedAt!)}. You can edit it again if an editor sends it back.`}
+            </p>
+          )}
           <div className={styles.actions}>
-            {isLive ? (
+            {!canReview ? (
+              <>
+                {!locked && (
+                  <>
+                    <button type="button" className={ui.button} disabled={pending} onClick={() => run("submit")}>
+                      {pendingIntent === "submit" ? "Submitting…" : "Submit for review"}
+                    </button>
+                    <button type="button" className={ui.buttonGhost} disabled={pending} onClick={() => run("save")}>
+                      {pendingIntent === "save" ? "Saving…" : "Save draft"}
+                    </button>
+                  </>
+                )}
+                <button type="button" className={ui.buttonGhost} disabled={!post.id || dirty} onClick={openPreview} title={dirty ? "Save first to preview" : undefined}>
+                  Preview
+                </button>
+              </>
+            ) : isLive ? (
               <>
                 <button type="button" className={ui.button} disabled={pending} onClick={() => run("save")}>
                   {pendingIntent === "save" ? "Updating…" : "Update"}
@@ -241,10 +308,15 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
                     Unschedule
                   </button>
                 )}
+                {inReview && (
+                  <button type="button" className={ui.buttonGhost} disabled={pending} onClick={sendBack}>
+                    {pendingIntent === "return" ? "Sending back…" : "Send back with note"}
+                  </button>
+                )}
               </>
             )}
           </div>
-          {showSchedule && !isLive && (
+          {canReview && showSchedule && !isLive && (
             <div className={styles.schedule}>
               <label className={styles.label} htmlFor="post-publish-at">
                 Publish on <span className={ui.muted}>(your local time)</span>
@@ -328,24 +400,30 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
           {errors.tagIds && <FieldError>{errors.tagIds}</FieldError>}
         </Panel>
 
-        <Panel title="Details">
-          <label className={styles.label} htmlFor="post-author">
-            Author
-          </label>
-          <select id="post-author" className={`${ui.select} ${styles.full}`} value={post.authorId} onChange={(e) => update("authorId", e.target.value)}>
-            {authors.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
-          </select>
-          {errors.authorId && <FieldError>{errors.authorId}</FieldError>}
+        {canReview ? (
+          <Panel title="Details">
+            <label className={styles.label} htmlFor="post-author">
+              Author
+            </label>
+            <select id="post-author" className={`${ui.select} ${styles.full}`} value={post.authorId} onChange={(e) => update("authorId", e.target.value)}>
+              {authors.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+            {errors.authorId && <FieldError>{errors.authorId}</FieldError>}
 
-          <label className={styles.checkbox}>
-            <input type="checkbox" checked={post.featured} onChange={(e) => update("featured", e.target.checked)} />
-            Feature on the home page
-          </label>
-        </Panel>
+            <label className={styles.checkbox}>
+              <input type="checkbox" checked={post.featured} onChange={(e) => update("featured", e.target.checked)} />
+              Feature on the home page
+            </label>
+          </Panel>
+        ) : (
+          <Panel title="Details">
+            <p className={ui.muted}>Published under your byline: {authors.find((a) => a.id === post.authorId)?.name ?? "your profile"}.</p>
+          </Panel>
+        )}
 
         <Panel title="Cover image">
           {post.coverSrc && (
@@ -493,7 +571,7 @@ export function PostEditor({ post: initial, tags, authors }: Props) {
 
         <MediaPicker open={Boolean(picker)} title={picker?.title} onSelect={(item) => closePicker(item)} onClose={() => closePicker(null)} />
 
-        {post.id && (
+        {post.id && canReview && (
           <button type="button" className={`${ui.buttonDanger} ${styles.delete}`} disabled={pending} onClick={remove}>
             {pendingIntent === "delete" ? "Deleting…" : "Delete post"}
           </button>

@@ -27,7 +27,7 @@ export default async function UsersPage() {
         <div>
           <h1 className={ui.title}>Users</h1>
           <p className={ui.subtitle}>
-            Invite-only. Invited people create their account (email + password) at /blog/admin/register. Admins manage people and everything else; editors manage content.
+            Invite-only. Invited people create their account (email + password) at /blog/admin/register. Admins manage people and everything else; editors manage and publish content; contributors write drafts and submit them for review.
           </p>
         </div>
       </header>

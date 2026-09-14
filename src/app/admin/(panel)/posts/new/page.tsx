@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireUser } from "@/lib/auth/dal";
+import { hasRole, requireUser } from "@/lib/auth/dal";
 import { loadEditorOptions } from "../editor/data";
 import { PostEditor } from "../editor/PostEditor";
 
@@ -13,6 +13,7 @@ export default async function NewPostPage() {
     <PostEditor
       tags={tags}
       authors={authors}
+      canReview={hasRole(user, "editor")}
       post={{
         title: "",
         slug: "",
@@ -32,6 +33,9 @@ export default async function NewPostPage() {
         canonicalUrl: "",
         noindex: false,
         status: "draft",
+        createdById: user.id,
+        reviewRequestedAt: null,
+        reviewNote: null,
         updatedAt: null,
         publishedAt: null,
       }}

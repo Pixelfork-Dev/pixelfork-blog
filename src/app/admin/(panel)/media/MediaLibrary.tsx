@@ -8,13 +8,15 @@ import styles from "./media.module.css";
 
 interface Props {
   mode: "page" | "picker";
+  /** Editors and admins; contributors can't delete images. */
+  canDelete?: boolean;
   initialItems?: MediaItem[];
   onSelect?: (item: MediaItem) => void;
 }
 
 const formatBytes = (n: number) => (n > 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
-export function MediaLibrary({ mode, initialItems, onSelect }: Props) {
+export function MediaLibrary({ mode, initialItems, onSelect, canDelete = false }: Props) {
   const [items, setItems] = useState<MediaItem[]>(initialItems ?? []);
   const [loading, setLoading] = useState(!initialItems);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -218,9 +220,11 @@ export function MediaLibrary({ mode, initialItems, onSelect }: Props) {
                   Copy URL
                 </button>
               )}
-              <button type="button" className={ui.buttonDanger} disabled={pending} onClick={remove}>
-                Delete
-              </button>
+              {canDelete && (
+                <button type="button" className={ui.buttonDanger} disabled={pending} onClick={remove}>
+                  Delete
+                </button>
+              )}
             </div>
           </>
         ) : (

@@ -4,33 +4,41 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./panel.module.css";
 
-const items = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/posts", label: "Posts" },
-  { href: "/admin/media", label: "Media" },
-  { href: "/admin/tags", label: "Tags" },
-  { href: "/admin/authors", label: "Authors" },
-  { href: "/admin/redirects", label: "Redirects" },
-  { href: "/admin/users", label: "Users", adminOnly: true },
-  { href: "/admin/api-tokens", label: "API tokens", adminOnly: true },
+type Role = "admin" | "editor" | "contributor";
+const RANK: Record<Role, number> = { contributor: 1, editor: 2, admin: 3 };
+
+const items: { href: string; label: string; min: Role }[] = [
+  { href: "/admin", label: "Dashboard", min: "contributor" },
+  { href: "/admin/posts", label: "Posts", min: "contributor" },
+  { href: "/admin/media", label: "Media", min: "contributor" },
+  { href: "/admin/tags", label: "Tags", min: "editor" },
+  { href: "/admin/authors", label: "Authors", min: "editor" },
+  { href: "/admin/redirects", label: "Redirects", min: "editor" },
+  { href: "/admin/users", label: "Users", min: "admin" },
+  { href: "/admin/api-tokens", label: "API tokens", min: "admin" },
 ];
 
 const upcoming: string[] = [];
 
-export function AdminNav({ isAdmin }: { isAdmin: boolean }) {
+export function AdminNav({ role, reviewCount }: { role: Role; reviewCount: number }) {
   const pathname = usePathname();
 
   return (
     <nav aria-label="Admin" className={styles.nav}>
       <ul>
         {items
-          .filter((item) => !item.adminOnly || isAdmin)
+          .filter((item) => RANK[role] >= RANK[item.min])
           .map((item) => {
             const active = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
             return (
               <li key={item.href}>
                 <Link href={item.href} className={styles.navLink} aria-current={active ? "page" : undefined}>
                   {item.label}
+                  {item.href === "/admin/posts" && reviewCount > 0 && (
+                    <span className={styles.navCount} aria-label={`${reviewCount} waiting for review`}>
+                      {reviewCount}
+                    </span>
+                  )}
                 </Link>
               </li>
             );

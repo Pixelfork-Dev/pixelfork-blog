@@ -13,7 +13,7 @@ export interface PasswordState {
 export async function updatePassword(_prev: PasswordState, formData: FormData): Promise<PasswordState> {
   let user;
   try {
-    user = await assertRole("editor");
+    user = await assertRole("contributor");
   } catch (e) {
     if (e instanceof AuthorizationError) return { ok: false, message: e.message };
     throw e;

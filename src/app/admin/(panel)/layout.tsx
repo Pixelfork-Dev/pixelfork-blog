@@ -2,13 +2,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "@/auth";
 import { assetPath } from "@/config/site";
-import { requireUser } from "@/lib/auth/dal";
+import { and, count, eq, isNotNull } from "drizzle-orm";
+import { db, schema } from "@/db";
+import { hasRole, requireUser } from "@/lib/auth/dal";
 import { AdminNav } from "./AdminNav";
 import ui from "../admin.module.css";
 import styles from "./panel.module.css";
 
 export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
   const user = await requireUser();
+  const [{ value: reviewCount }] = hasRole(user, "editor")
+    ? await db
+        .select({ value: count() })
+        .from(schema.posts)
+        .where(and(eq(schema.posts.status, "draft"), isNotNull(schema.posts.reviewRequestedAt)))
+    : [{ value: 0 }];
 
   async function doSignOut() {
     "use server";
@@ -25,7 +33,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
           <span className={styles.brandTag}>Blog admin</span>
         </div>
 
-        <AdminNav isAdmin={user.role === "admin"} />
+        <AdminNav role={user.role} reviewCount={reviewCount} />
 
         <div className={styles.account}>
           <div className={ui.person}>

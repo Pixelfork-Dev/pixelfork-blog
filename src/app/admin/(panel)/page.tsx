@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { count, desc, eq, isNull, ne } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNotNull, isNull, ne } from "drizzle-orm";
 import { db, schema } from "@/db";
-import { requireUser } from "@/lib/auth/dal";
+import { hasRole, requireUser } from "@/lib/auth/dal";
 import { formatDate } from "@/lib/format";
 import { StatusBadge } from "./StatusBadge";
 import ui from "../admin.module.css";
@@ -11,9 +11,22 @@ export const metadata: Metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const user = await requireUser();
+  const canReview = hasRole(user, "editor");
+  // Contributors only see their own posts.
+  const mine = canReview ? undefined : eq(schema.posts.createdById, user.id);
+
+  // Drafts contributors have submitted, oldest first (editors/admins).
+  const reviewQueue = canReview
+    ? await db
+        .select({ id: schema.posts.id, title: schema.posts.title, reviewRequestedAt: schema.posts.reviewRequestedAt, author: schema.authors.name })
+        .from(schema.posts)
+        .innerJoin(schema.authors, eq(schema.posts.authorId, schema.authors.id))
+        .where(and(eq(schema.posts.status, "draft"), isNotNull(schema.posts.reviewRequestedAt)))
+        .orderBy(asc(schema.posts.reviewRequestedAt))
+    : [];
 
   const [byStatus, [{ value: userCount }], [{ value: tagCount }], recent] = await Promise.all([
-    db.select({ status: schema.posts.status, value: count() }).from(schema.posts).groupBy(schema.posts.status),
+    db.select({ status: schema.posts.status, value: count() }).from(schema.posts).where(mine).groupBy(schema.posts.status),
     db.select({ value: count() }).from(schema.users).where(isNull(schema.users.disabledAt)),
     db.select({ value: count() }).from(schema.tags),
     db
@@ -24,16 +37,20 @@ export default async function DashboardPage() {
         status: schema.posts.status,
         publishedAt: schema.posts.publishedAt,
         updatedAt: schema.posts.updatedAt,
+        reviewRequestedAt: schema.posts.reviewRequestedAt,
         author: schema.authors.name,
       })
       .from(schema.posts)
       .innerJoin(schema.authors, eq(schema.posts.authorId, schema.authors.id))
+      .where(mine)
       .orderBy(desc(schema.posts.updatedAt))
       .limit(6),
   ]);
 
   // SEO health: live posts with fixable problems, worst first.
-  const livePosts = await db
+  const livePosts = !canReview
+    ? []
+    : await db
     .select({
       id: schema.posts.id,
       title: schema.posts.title,
@@ -66,13 +83,19 @@ export default async function DashboardPage() {
     .slice(0, 8);
 
   const statusCount = (s: string) => byStatus.find((r) => r.status === s)?.value ?? 0;
-  const stats = [
-    { label: "Published", value: statusCount("published") },
-    { label: "Scheduled", value: statusCount("scheduled") },
-    { label: "Drafts", value: statusCount("draft") },
-    { label: "Tags", value: tagCount },
-    { label: "Team members", value: userCount },
-  ];
+  const stats = canReview
+    ? [
+        { label: "Waiting for review", value: reviewQueue.length },
+        { label: "Published", value: statusCount("published") },
+        { label: "Scheduled", value: statusCount("scheduled") },
+        { label: "Drafts", value: statusCount("draft") },
+        { label: "Tags", value: tagCount },
+        { label: "Team members", value: userCount },
+      ]
+    : [
+        { label: "My published posts", value: statusCount("published") + statusCount("scheduled") },
+        { label: "My drafts", value: statusCount("draft") },
+      ];
 
   return (
     <>
@@ -102,6 +125,43 @@ export default async function DashboardPage() {
         </div>
       </section>
 
+      {canReview && (
+        <section className={ui.section} aria-labelledby="review-heading">
+          <h2 id="review-heading" className={ui.sectionTitle}>
+            Waiting for review ({reviewQueue.length})
+          </h2>
+          {reviewQueue.length === 0 ? (
+            <p className={ui.muted}>Nothing to review. Drafts submitted by contributors appear here.</p>
+          ) : (
+            <div className={ui.tableWrap}>
+              <table className={ui.table}>
+                <thead>
+                  <tr>
+                    <th>Post</th>
+                    <th>Author</th>
+                    <th>Submitted</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reviewQueue.map((p) => (
+                    <tr key={p.id}>
+                      <td>
+                        <Link href={`/admin/posts/${p.id}`} className={ui.link}>
+                          {p.title || "Untitled"}
+                        </Link>
+                      </td>
+                      <td className={ui.muted}>{p.author}</td>
+                      <td className={`${ui.muted} ${ui.nowrap}`}>{formatDate(p.reviewRequestedAt!.toISOString())}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
+
+      {canReview && (
       <section className={ui.section} aria-labelledby="seo-heading">
         <h2 id="seo-heading" className={ui.sectionTitle}>
           SEO health
@@ -134,9 +194,11 @@ export default async function DashboardPage() {
         )}
       </section>
 
+      )}
+
       <section className={ui.section} aria-labelledby="recent-heading">
         <h2 id="recent-heading" className={ui.sectionTitle}>
-          Recently updated
+          {canReview ? "Recently updated" : "My recent posts"}
         </h2>
         <div className={ui.tableWrap}>
           <table className={ui.table}>
@@ -157,7 +219,7 @@ export default async function DashboardPage() {
                     </Link>
                   </td>
                   <td>
-                    <StatusBadge status={post.status} publishedAt={post.publishedAt} />
+                    <StatusBadge status={post.status} publishedAt={post.publishedAt} inReview={Boolean(post.reviewRequestedAt)} />
                   </td>
                   <td className={ui.muted}>{post.author}</td>
                   <td className={`${ui.muted} ${ui.nowrap}`}>{formatDate(post.updatedAt.toISOString())}</td>

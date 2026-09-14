@@ -5,7 +5,7 @@ import { z } from "zod";
 import { db, schema } from "@/db";
 import { recordMove, releasePath } from "@/lib/admin/redirects";
 import { revalidatePublicSite } from "@/lib/admin/revalidate";
-import { assertRole, AuthorizationError } from "@/lib/auth/dal";
+import { assertRole, AuthorizationError, hasRole } from "@/lib/auth/dal";
 
 export interface AuthorInput {
   id?: string;
@@ -44,7 +44,10 @@ const authorSchema = z.object({
 
 export async function saveAuthor(input: AuthorInput): Promise<AuthorResult> {
   try {
-    await assertRole("editor");
+    const user = await assertRole("contributor");
+    if (!hasRole(user, "editor") && (!input.id || input.id !== user.authorId)) {
+      return { ok: false, message: "You can only edit your own profile." };
+    }
     const cleaned = { ...input, sameAs: input.sameAs.map((u) => u.trim()).filter(Boolean) };
     const parsed = authorSchema.safeParse(cleaned);
     if (!parsed.success) {

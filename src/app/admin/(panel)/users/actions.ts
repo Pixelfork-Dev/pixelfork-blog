@@ -12,7 +12,7 @@ export interface ActionState {
   message: string;
 }
 
-const roleSchema = z.enum(["admin", "editor"]);
+const roleSchema = z.enum(["admin", "editor", "contributor"]);
 
 async function guarded(fn: () => Promise<ActionState>): Promise<ActionState> {
   try {

@@ -39,6 +39,9 @@ export async function loadEditorPost(id: string): Promise<EditorPost | null> {
     canonicalUrl: row.canonicalUrl ?? "",
     noindex: row.noindex,
     status: row.status,
+    createdById: row.createdById,
+    reviewRequestedAt: row.reviewRequestedAt?.toISOString() ?? null,
+    reviewNote: row.reviewNote,
     updatedAt: row.updatedAt.toISOString(),
     publishedAt: row.publishedAt?.toISOString() ?? null,
   };
