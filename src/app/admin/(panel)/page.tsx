@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { and, asc, count, desc, eq, isNotNull, isNull, ne } from "drizzle-orm";
+import { asc, count, desc, eq, isNotNull, isNull, ne } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { hasRole, requireUser } from "@/lib/auth/dal";
 import { formatDate } from "@/lib/format";
@@ -21,7 +21,7 @@ export default async function DashboardPage() {
         .select({ id: schema.posts.id, title: schema.posts.title, reviewRequestedAt: schema.posts.reviewRequestedAt, author: schema.authors.name })
         .from(schema.posts)
         .innerJoin(schema.authors, eq(schema.posts.authorId, schema.authors.id))
-        .where(and(eq(schema.posts.status, "draft"), isNotNull(schema.posts.reviewRequestedAt)))
+        .where(isNotNull(schema.posts.reviewRequestedAt))
         .orderBy(asc(schema.posts.reviewRequestedAt))
     : [];
 

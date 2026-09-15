@@ -1,8 +1,9 @@
 "use server";
 
-import { and, eq, inArray, ne } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, ne, or } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
+import type { PostRevision } from "@/db/schema";
 import { recordMove, releasePath } from "@/lib/admin/redirects";
 import { revalidatePublicSite } from "@/lib/admin/revalidate";
 import { assertRole, AuthorizationError, hasRole } from "@/lib/auth/dal";
@@ -48,6 +49,7 @@ export interface SaveResult {
     publishedAt: string | null;
     reviewRequestedAt: string | null;
     reviewNote: string | null;
+    hasPendingRevision: boolean;
   };
 }
 
@@ -107,7 +109,6 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
 
     if (!isReviewer) {
       if (existing && existing.createdById !== user.id) return { ok: false, message: "You can only edit your own posts." };
-      if (existing && existing.status !== "draft") return { ok: false, message: "This post is live. Ask an editor to change it." };
       if (existing?.reviewRequestedAt) {
         return { ok: false, message: "This post is waiting for review. You can edit it again if an editor sends it back." };
       }
@@ -121,6 +122,65 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
       return {
         ok: false,
         message: "Someone else saved this post after you opened it. Copy your changes, reload the page and try again.",
+      };
+    }
+
+    // Contributor editing a published or scheduled post: store the changes as a pending revision.
+    // The live article stays exactly as it is until an editor publishes the revision.
+    if (!isReviewer && existing && existing.status !== "draft") {
+      const errors: SaveResult["fieldErrors"] = {};
+      if (data.slug !== existing.slug) errors.slug = "The URL of a published post can’t be changed. Ask an editor.";
+      if (coverAltMissing(data)) errors.coverAlt = "Describe the cover image for accessibility and image search.";
+      if (data.excerpt.length < 40) errors.excerpt = "Published posts need an excerpt of at least 40 characters (used for SEO).";
+      if (isEmptyHtml(content)) errors.content = "Published posts need some content.";
+      if (data.tagIds.length) {
+        const found = await db.select({ id: schema.tags.id }).from(schema.tags).where(inArray(schema.tags.id, data.tagIds));
+        if (found.length !== new Set(data.tagIds).size) errors.tagIds = "Some tags no longer exist.";
+      }
+      if (Object.keys(errors).length) return { ok: false, message: "Please fix the highlighted fields.", fieldErrors: errors };
+
+      const revision: PostRevision = {
+        title: data.title,
+        excerpt: data.excerpt,
+        content,
+        tagIds: [...new Set(data.tagIds)],
+        coverSrc: data.coverSrc || null,
+        coverAlt: data.coverSrc ? data.coverAlt : null,
+        coverWidth: data.coverSrc ? (data.coverWidth ?? (data.coverSrc === existing.coverSrc ? existing.coverWidth : null)) : null,
+        coverHeight: data.coverSrc ? (data.coverHeight ?? (data.coverSrc === existing.coverSrc ? existing.coverHeight : null)) : null,
+        seoTitle: data.seoTitle || null,
+        seoDescription: data.seoDescription || null,
+        focusKeyword: data.focusKeyword || null,
+        canonicalUrl: data.canonicalUrl || null,
+        noindex: data.noindex,
+      };
+      const [saved] = await db
+        .update(schema.posts)
+        .set({
+          pendingRevision: revision,
+          updatedById: user.id,
+          ...(intent === "submit" ? { reviewRequestedAt: new Date(), reviewNote: null } : {}),
+          // Don't bump the public "updated" date for changes nobody can see yet.
+          updatedAt: existing.updatedAt,
+        })
+        .where(eq(schema.posts.id, existing.id))
+        .returning();
+      return {
+        ok: true,
+        message:
+          intent === "submit"
+            ? "Changes submitted for review. The live post stays as it is until an editor publishes them."
+            : "Changes saved. They aren’t live yet: submit them for review when you’re ready.",
+        post: {
+          id: saved.id,
+          slug: saved.slug,
+          status: saved.status,
+          updatedAt: saved.updatedAt.toISOString(),
+          publishedAt: saved.publishedAt?.toISOString() ?? null,
+          reviewRequestedAt: saved.reviewRequestedAt?.toISOString() ?? null,
+          reviewNote: saved.reviewNote,
+          hasPendingRevision: true,
+        },
       };
     }
 
@@ -192,6 +252,8 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
       // Submitting starts a review; publishing or scheduling ends it.
       ...(intent === "submit" ? { reviewRequestedAt: now, reviewNote: null } : {}),
       ...(willBePublic ? { reviewRequestedAt: null, reviewNote: null } : {}),
+      // The editor loaded the contributor's revision into the form, so saving applies it.
+      ...(isReviewer && existing?.pendingRevision ? { pendingRevision: null, reviewRequestedAt: null } : {}),
     };
 
     const saved = await db.transaction(async (tx) => {
@@ -244,6 +306,7 @@ export async function savePost(input: PostInput, intent: SaveIntent): Promise<Sa
         publishedAt: saved.publishedAt?.toISOString() ?? null,
         reviewRequestedAt: saved.reviewRequestedAt?.toISOString() ?? null,
         reviewNote: saved.reviewNote,
+        hasPendingRevision: Boolean(saved.pendingRevision),
       },
     };
   } catch (e) {
@@ -283,11 +346,30 @@ export async function returnForChanges(id: string, note: string): Promise<{ ok: 
     const [row] = await db
       .update(schema.posts)
       .set({ reviewRequestedAt: null, reviewNote: clean.data })
-      .where(and(eq(schema.posts.id, z.uuid().parse(id)), eq(schema.posts.status, "draft")))
+      .where(and(eq(schema.posts.id, z.uuid().parse(id)), or(eq(schema.posts.status, "draft"), isNotNull(schema.posts.pendingRevision))))
       .returning({ updatedAt: schema.posts.updatedAt });
     return row
       ? { ok: true, message: "Sent back to the author with your note.", updatedAt: row.updatedAt.toISOString() }
-      : { ok: false, message: "Only drafts can be sent back." };
+      : { ok: false, message: "Only drafts or proposed changes can be sent back." };
+  } catch (e) {
+    if (e instanceof AuthorizationError) return { ok: false, message: e.message };
+    console.error(e);
+    return { ok: false, message: "Something went wrong." };
+  }
+}
+
+/** Editors reject a contributor's proposed changes to a live post; the live version stays. */
+export async function discardRevision(id: string): Promise<{ ok: boolean; message: string; updatedAt?: string }> {
+  try {
+    await assertRole("editor");
+    const [row] = await db
+      .update(schema.posts)
+      .set({ pendingRevision: null, reviewRequestedAt: null })
+      .where(and(eq(schema.posts.id, z.uuid().parse(id)), isNotNull(schema.posts.pendingRevision)))
+      .returning({ updatedAt: schema.posts.updatedAt });
+    return row
+      ? { ok: true, message: "Proposed changes discarded. The live post is unchanged.", updatedAt: row.updatedAt.toISOString() }
+      : { ok: false, message: "There are no proposed changes to discard." };
   } catch (e) {
     if (e instanceof AuthorizationError) return { ok: false, message: e.message };
     console.error(e);

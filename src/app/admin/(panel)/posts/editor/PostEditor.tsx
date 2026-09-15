@@ -7,7 +7,7 @@ import { siteConfig } from "@/config/site";
 import { slugify } from "@/lib/slug";
 import type { MediaItem } from "../../media/actions";
 import { MediaPicker } from "../../media/MediaPicker";
-import { deletePost, returnForChanges, savePost, type PostInput, type SaveIntent, type SaveResult } from "../actions";
+import { deletePost, discardRevision, returnForChanges, savePost, type PostInput, type SaveIntent, type SaveResult } from "../actions";
 import { RichTextEditor } from "./RichTextEditor";
 import { runSeoChecks, seoScore } from "./seoChecks";
 import ui from "../../../admin.module.css";
@@ -20,6 +20,8 @@ export interface EditorPost extends Omit<PostInput, "loadedUpdatedAt"> {
   reviewRequestedAt: string | null;
   /** Reviewer's note when the draft was sent back. */
   reviewNote: string | null;
+  /** The form shows a contributor's proposed (not yet live) changes to a published post. */
+  hasPendingRevision: boolean;
   updatedAt: string | null;
   publishedAt: string | null;
 }
@@ -50,7 +52,7 @@ export function PostEditor({ post: initial, tags, authors, canReview }: Props) {
     return null;
   });
   const [pending, startTransition] = useTransition();
-  const [pendingIntent, setPendingIntent] = useState<SaveIntent | "delete" | "return" | null>(null);
+  const [pendingIntent, setPendingIntent] = useState<SaveIntent | "delete" | "return" | "discard" | null>(null);
   // One picker for both the cover and in-article images; `resolvePick` receives the chosen image.
   const [picker, setPicker] = useState<{ title: string; resolve: (item: MediaItem | null) => void } | null>(null);
   const pickImage = useCallback(
@@ -118,6 +120,7 @@ export function PostEditor({ post: initial, tags, authors, canReview }: Props) {
             publishedAt: res.post.publishedAt,
             reviewRequestedAt: res.post.reviewRequestedAt,
             reviewNote: res.post.reviewNote,
+            hasPendingRevision: res.post.hasPendingRevision,
           };
           setPost(next);
           setSaved(next);
@@ -150,6 +153,18 @@ export function PostEditor({ post: initial, tags, authors, canReview }: Props) {
         setSaved(next);
         router.refresh();
       }
+    });
+  };
+
+  const discard = () => {
+    if (!post.id || !window.confirm("Discard the contributor’s proposed changes? The live post stays as it is.")) return;
+    setPendingIntent("discard");
+    startTransition(async () => {
+      const res = await discardRevision(post.id!);
+      setResult(res);
+      setPendingIntent(null);
+      // Reload so the form shows the live version again.
+      if (res.ok) window.location.reload();
     });
   };
 
@@ -246,9 +261,10 @@ export function PostEditor({ post: initial, tags, authors, canReview }: Props) {
             <span className={`${ui.badge} ${isLive ? ui.badgePublished : isScheduled || inReview ? ui.badgeScheduled : ui.badgeDraft}`}>
               {isLive ? "published" : isScheduled ? "scheduled" : inReview ? "in review" : "draft"}
             </span>
+            {post.hasPendingRevision && <span className={`${ui.badge} ${ui.badgeScheduled}`}>{inReview ? "changes in review" : "unpublished changes"}</span>}
             {post.publishedAt && post.status !== "draft" && <span className={ui.muted}>{formatWhen(post.publishedAt)}</span>}
           </div>
-          {post.reviewNote && !inReview && !isLive && (
+          {post.reviewNote && !inReview && (!isLive || post.hasPendingRevision) && (
             <p className={`${ui.notice} ${ui.noticeError}`}>
               <strong>Changes requested:</strong> {post.reviewNote}
             </p>
@@ -256,7 +272,9 @@ export function PostEditor({ post: initial, tags, authors, canReview }: Props) {
           {inReview && (
             <p className={`${ui.notice} ${ui.muted}`}>
               {canReview
-                ? "A contributor submitted this draft. Publish it, or send it back with a note."
+                ? post.hasPendingRevision
+                  ? "A contributor proposed changes to this live post. You’re seeing their version: publish the changes, send them back with a note, or discard them."
+                  : "A contributor submitted this draft. Publish it, or send it back with a note."
                 : `Submitted for review ${formatWhen(post.reviewRequestedAt!)}. You can edit it again if an editor sends it back.`}
             </p>
           )}
@@ -266,12 +284,17 @@ export function PostEditor({ post: initial, tags, authors, canReview }: Props) {
                 {!locked && (
                   <>
                     <button type="button" className={ui.button} disabled={pending} onClick={() => run("submit")}>
-                      {pendingIntent === "submit" ? "Submitting…" : "Submit for review"}
+                      {pendingIntent === "submit" ? "Submitting…" : isLive || isScheduled ? "Submit changes for review" : "Submit for review"}
                     </button>
                     <button type="button" className={ui.buttonGhost} disabled={pending} onClick={() => run("save")}>
-                      {pendingIntent === "save" ? "Saving…" : "Save draft"}
+                      {pendingIntent === "save" ? "Saving…" : isLive || isScheduled ? "Save changes" : "Save draft"}
                     </button>
                   </>
+                )}
+                {isLive && (
+                  <a href={`/posts/${saved.slug}`} target="_blank" rel="noreferrer" className={ui.buttonGhost}>
+                    View live
+                  </a>
                 )}
                 <button type="button" className={ui.buttonGhost} disabled={!post.id || dirty} onClick={openPreview} title={dirty ? "Save first to preview" : undefined}>
                   Preview
@@ -280,11 +303,26 @@ export function PostEditor({ post: initial, tags, authors, canReview }: Props) {
             ) : isLive ? (
               <>
                 <button type="button" className={ui.button} disabled={pending} onClick={() => run("save")}>
-                  {pendingIntent === "save" ? "Updating…" : "Update"}
+                  {pendingIntent === "save" ? "Updating…" : post.hasPendingRevision ? "Publish changes" : "Update"}
                 </button>
                 <a href={`/posts/${saved.slug}`} target="_blank" rel="noreferrer" className={ui.buttonGhost}>
                   View live
                 </a>
+                {post.hasPendingRevision && (
+                  <>
+                    <button type="button" className={ui.buttonGhost} disabled={!post.id || dirty} onClick={openPreview} title={dirty ? "Save first to preview" : undefined}>
+                      Preview changes
+                    </button>
+                    {inReview && (
+                      <button type="button" className={ui.buttonGhost} disabled={pending} onClick={sendBack}>
+                        {pendingIntent === "return" ? "Sending back…" : "Send back with note"}
+                      </button>
+                    )}
+                    <button type="button" className={ui.buttonGhost} disabled={pending} onClick={discard}>
+                      {pendingIntent === "discard" ? "Discarding…" : "Discard changes"}
+                    </button>
+                  </>
+                )}
                 <button type="button" className={ui.buttonGhost} disabled={pending} onClick={() => run("unpublish")}>
                   Unpublish
                 </button>
@@ -338,7 +376,11 @@ export function PostEditor({ post: initial, tags, authors, canReview }: Props) {
               <p className={`${ui.muted} ${styles.hint}`}>The post goes live within about 10 minutes of this time.</p>
             </div>
           )}
-          {isLive && <p className={`${ui.muted} ${styles.hint}`}>Updates go live immediately.</p>}
+          {isLive && (
+            <p className={`${ui.muted} ${styles.hint}`}>
+              {canReview ? "Updates go live immediately." : "Your changes stay private until an editor publishes them. The live post doesn’t change."}
+            </p>
+          )}
         </Panel>
 
         <Panel title="URL">
@@ -351,6 +393,8 @@ export function PostEditor({ post: initial, tags, authors, canReview }: Props) {
               id="post-slug"
               className={`${ui.input} ${styles.grow}`}
               value={post.slug}
+              // Contributors can't move a live post to a new URL.
+              readOnly={!canReview && post.status !== "draft"}
               aria-invalid={Boolean(errors.slug)}
               onChange={(e) => {
                 setSlugTouched(true);

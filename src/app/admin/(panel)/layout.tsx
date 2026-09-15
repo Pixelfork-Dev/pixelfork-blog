@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "@/auth";
 import { assetPath } from "@/config/site";
-import { and, count, eq, isNotNull } from "drizzle-orm";
+import { count, isNotNull } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { hasRole, requireUser } from "@/lib/auth/dal";
 import { AdminNav } from "./AdminNav";
@@ -15,7 +15,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
     ? await db
         .select({ value: count() })
         .from(schema.posts)
-        .where(and(eq(schema.posts.status, "draft"), isNotNull(schema.posts.reviewRequestedAt)))
+        .where(isNotNull(schema.posts.reviewRequestedAt))
     : [{ value: 0 }];
 
   async function doSignOut() {

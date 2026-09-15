@@ -3,6 +3,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -78,6 +79,24 @@ export const tags = pgTable("tags", {
   ...timestamps,
 });
 
+/** Editable fields of a post, stored as a contributor's pending revision of a live post. */
+export interface PostRevision {
+  title: string;
+  excerpt: string;
+  /** Sanitized HTML. */
+  content: string;
+  tagIds: string[];
+  coverSrc: string | null;
+  coverAlt: string | null;
+  coverWidth: number | null;
+  coverHeight: number | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  focusKeyword: string | null;
+  canonicalUrl: string | null;
+  noindex: boolean;
+}
+
 export const posts = pgTable(
   "posts",
   {
@@ -106,6 +125,11 @@ export const posts = pgTable(
       .references(() => authors.id, { onDelete: "restrict" }),
     createdById: uuid("created_by_id").references(() => users.id, { onDelete: "set null" }),
     updatedById: uuid("updated_by_id").references(() => users.id, { onDelete: "set null" }),
+    /**
+     * A contributor's proposed changes to a live post. The public site keeps showing the live fields until an
+     * editor publishes the revision (see PostRevision).
+     */
+    pendingRevision: jsonb("pending_revision").$type<PostRevision>(),
     /** Set when a contributor submits the draft for review; cleared when it's published or sent back. */
     reviewRequestedAt: timestamp("review_requested_at", { withTimezone: true }),
     /** Note from the reviewer when a submission is sent back to its author. */

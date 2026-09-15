@@ -28,7 +28,7 @@ export default async function PostsPage({ searchParams }: PageProps<"/admin/post
   // Contributors only see the posts they created.
   const scope = canReview ? undefined : eq(schema.posts.createdById, user.id);
   if (scope) conditions.push(scope);
-  if (status === "review") conditions.push(and(eq(schema.posts.status, "draft"), isNotNull(schema.posts.reviewRequestedAt))!);
+  if (status === "review") conditions.push(isNotNull(schema.posts.reviewRequestedAt));
   if (status === "published") conditions.push(sql`${schema.posts.status} <> 'draft'`);
   if (status === "draft") conditions.push(eq(schema.posts.status, "draft"));
   if (q) conditions.push(or(ilike(schema.posts.title, `%${q}%`), ilike(schema.posts.slug, `%${q}%`))!);
@@ -48,7 +48,7 @@ export default async function PostsPage({ searchParams }: PageProps<"/admin/post
     db
       .select({ value: count() })
       .from(schema.posts)
-      .where(and(eq(schema.posts.status, "draft"), isNotNull(schema.posts.reviewRequestedAt), scope)),
+      .where(and(isNotNull(schema.posts.reviewRequestedAt), scope)),
   ]);
 
   const total = counts.reduce((n, c) => n + c.value, 0);

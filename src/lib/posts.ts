@@ -108,7 +108,22 @@ export const getPostBySlug = cache(async (slug: string): Promise<Post | null> =>
 /** Any post regardless of status — for the authenticated admin preview only. */
 export async function getPostPreview(id: string): Promise<Post | null> {
   const [row] = await findPosts(eq(schema.posts.id, id));
-  return row ? toPost(toRaw(row)) : null;
+  if (!row) return null;
+  const rev = row.pendingRevision;
+  if (!rev) return toPost(toRaw(row));
+  // Preview a contributor's proposed changes to a live post.
+  const tags = rev.tagIds.length ? await db.select().from(schema.tags).where(inArray(schema.tags.id, rev.tagIds)) : [];
+  return toPost(
+    toRaw({
+      ...row,
+      ...rev,
+      contentFormat: "html",
+      postTags: rev.tagIds.flatMap((tagId, position) => {
+        const tag = tags.find((t) => t.id === tagId);
+        return tag ? [{ postId: row.id, tagId, position, tag }] : [];
+      }),
+    }),
+  );
 }
 
 export async function getPostsByTag(tagSlug: string) {

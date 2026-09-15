@@ -36,6 +36,7 @@ export default async function NewPostPage() {
         createdById: user.id,
         reviewRequestedAt: null,
         reviewNote: null,
+        hasPendingRevision: false,
         updatedAt: null,
         publishedAt: null,
       }}

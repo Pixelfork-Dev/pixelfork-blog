@@ -44,6 +44,8 @@ First run: open `/blog/admin/register` and create an account with an email liste
   - `contributor`: writes their own drafts, uploads images, picks existing tags and **submits drafts for review**. Can't publish,
     delete, manage tags/authors/redirects, or see other people's posts. A submitted draft is locked until an editor publishes it or
     sends it back with a note. Editors see submissions under *Dashboard → Waiting for review* and a badge on *Posts*.
+    Contributors can also edit their **published** posts: changes are saved as a private revision (the live article doesn't change)
+    and submitted for review. Editors see the proposed version and can *Publish changes*, *Send back with note* or *Discard changes*.
 - Roles and deactivation apply on the next request, and every page and server action re-checks the user in the database (`src/lib/auth/dal.ts`).
 - The blog always keeps at least one active admin. Admins can't demote or deactivate themselves.
 

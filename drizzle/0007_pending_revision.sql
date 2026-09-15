@@ -1,0 +1,1 @@
+ALTER TABLE "posts" ADD COLUMN "pending_revision" jsonb;
