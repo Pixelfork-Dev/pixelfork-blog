@@ -127,6 +127,59 @@ Some things simply don't live in a web editor: ad SDKs, in-app purchases through
 
 Keep the app name and icon consistent across builds, and bump your version for each upload — Play rejects a bundle whose version code it has already seen.
 
+## Signing, in plain language
+
+Every Android app is signed with a cryptographic key, and Android uses that signature to decide whether an update really comes from you. Two practical rules follow:
+
+1. **Keep your keys safe and backed up.** If you lose the key for an app published outside Play, you cannot ship updates to existing installs.
+2. **On Play, use Play App Signing.** Google holds the app signing key and you keep an upload key; if the upload key is lost, support can help you reset it. That safety net is the main reason it exists.
+
+For test builds you send to friends, the signature doesn't matter much — Android will simply warn about an unknown source. For anything on the store, it matters permanently.
+
+## Version codes and updates
+
+Two fields travel with every build:
+
+- **Version code** — an integer Play uses to order releases. Every upload needs a higher number than the last, or Play rejects it.
+- **Version name** — the human-readable string ("1.0.3") players see.
+
+A simple habit that avoids confusion: bump the version code for every single build you upload anywhere, even the ones that never reach production, and keep the version name for changes players would notice.
+
+## A sideloading checklist for testers
+
+When you send an APK to testers, send these five lines with it:
+
+1. Download the file on the Android phone itself (not on a desktop and then AirDropped — that's where most confusion starts).
+2. Open it from the notification or the Files app.
+3. If Android warns about unknown sources, allow installs for the app you downloaded it with.
+4. Play for a few minutes, including a restart of the app.
+5. Reply with: did it launch, did anything look wrong, and did it ever feel slow?
+
+That's the whole protocol. Testers who get a wall of instructions usually don't test.
+
+## What to actually test on device
+
+The point of an APK isn't to prove the game exists — it's to find what the browser hid:
+
+- **First launch.** Cold start on a mid-range phone, with no cache.
+- **Touch accuracy.** Are the buttons and pieces big enough for a thumb?
+- **Frame rate under load.** The busiest moment, not the menu.
+- **Screen shapes.** Notches, rounded corners and tall aspect ratios clipping UI.
+- **Interruptions.** A phone call or backgrounding the app, then returning — does it resume or restart?
+- **Battery and heat** over a ten-minute session, if your game runs 3D continuously.
+
+Each of those has fixes that are cheap now and expensive after launch. Our [mobile performance checklist](/posts/optimize-mobile-game-performance) covers the ones that need code.
+
+## What about distributing outside Google Play?
+
+Play isn't the only Android channel, and APKs matter more here:
+
+- **itch.io** accepts APK uploads, which makes it a natural home for jam builds and demos — see [publishing on itch.io and Steam](/posts/publish-your-game-on-itch-io-and-steam).
+- **Direct downloads** from your own site work, as long as you tell players about the unknown-sources prompt.
+- **Other Android stores** have their own formats and rules; check each one before assuming your Play bundle transfers.
+
+In all of those cases, you're responsible for signing and for hosting updates — there's no Play Console doing it for you.
+
 ## FAQ
 
 ### Can I publish an APK to Google Play?

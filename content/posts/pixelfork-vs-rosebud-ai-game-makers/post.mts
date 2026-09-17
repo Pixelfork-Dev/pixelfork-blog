@@ -144,6 +144,71 @@ Pick one small idea — a one-mechanic arcade loop you could describe in a sente
 
 That afternoon will tell you more than any comparison table, including this one. If the answer for your project is "Android test build this week, Play Console next month", start with the [prompt library](/posts/best-ai-game-prompts-mobile) and build it on Mobile / Tablet.
 
+## Iteration models, compared honestly
+
+How you change a game after generation matters more than how it was generated.
+
+- **Chat-only iteration** is the simplest model: every change is a message. It's fluent for structure ("add a shop") and expensive for feel ("a bit faster"), because each message costs a generation.
+- **Chat plus panels** splits the work: structure through chat, numeric values through a panel where changes apply instantly. That's the model Pixelfork uses, and it's the difference between spending a plan's credits on polish and spending almost none.
+- **Chat plus direct code** is the escape hatch. If you can open the generated source, you can fix a specific bug in a minute instead of describing it three times.
+
+When you trial a tool, deliberately try to change one number and one system, and notice which one hurts.
+
+## Cost models are part of the comparison
+
+Pricing in this category is usually generation-based, which creates a hidden cost: exploration. If every experiment costs the same as a real change, you stop experimenting — and experimentation is how you find the fun.
+
+Look for:
+
+- **What's free.** Playing, reverting, editing code and publishing should not cost anything.
+- **What a small tweak costs** compared to a full regeneration.
+- **Whether unused credit carries over**, and whether top-ups expire.
+
+For reference, Pixelfork charges 2 credits for a project's first generation and 1 per chat change, with preview play, version history, code edits, mechanics tuning and publishing free of charge; plans run Free (5), Lite (50 for $15) and Pro (100 + 20 for $25), with add-on packs that don't expire with the cycle. Check each competitor's current pricing page the same way before you commit.
+
+## What transfers if you switch tools
+
+Nothing about this category is permanent, so assume you might move:
+
+- **Design work transfers.** Your mechanic, tuning values, level layouts and art direction are the real assets.
+- **Code transfers partially.** JavaScript and Three.js output can be edited anywhere, but it isn't a Unity or Godot project.
+- **Store presence transfers with effort.** The listing, screenshots and reviews belong to your Play account, not to the tool — but a rebuilt game needs a new build, and the package name must stay the same to keep the same listing.
+
+That last point is worth planning for: pick a package name you're happy with before your first store upload.
+
+## Verdict by persona
+
+- **A teacher or workshop host:** browser-first. Zero install for students beats everything else.
+- **A solo creator validating a mobile idea:** web tech with packaging. Fastest route from idea to a build on a phone.
+- **A developer who wants to own the project long-term:** engine-first, or a traditional engine outright.
+- **A studio with a live-ops roadmap:** a traditional engine, with AI tools used for prototyping and pre-production.
+
+There's no dishonest answer here — only mismatches between what a tool produces and what you needed to walk away with.
+
+## Try this evaluation, not a feature table
+
+Feature tables in this category go stale within weeks, so build your own evidence:
+
+1. **Same prompt, two tools.** Use one of the starters from [the prompt library](/posts/best-ai-game-prompts-mobile) so the comparison is fair.
+2. **Make three changes:** one structural ("add a coin counter"), one numeric ("raise gravity"), one visual ("switch to flat cartoon art").
+3. **Try to export** whatever the tool offers, and note every step and account you needed.
+4. **Open the result on a phone**, not a laptop.
+5. **Write down what you'd have to do next** to put it on a store.
+
+Whichever tool made step 5 shortest for your goal is your answer — for this project. The next project may have a different shape, and that's fine.
+
+## What none of these tools do for you
+
+Whatever you pick, this work stays yours:
+
+- **Deciding what's fun.** Models generate mechanics; they don't have taste or a target player.
+- **Difficulty and pacing.** Tuning against real playtests is judgement, not generation.
+- **Store presence.** Listing copy, screenshots, icon, ratings and reviews.
+- **Policy compliance.** Data safety, consent, age ratings and the testing gates.
+- **Marketing.** A playable link helps, but somebody still has to post it where players are.
+
+Choosing on export path is about removing engineering friction from the first 20%. The remaining 80% looks the same from every tool.
+
 ## FAQ
 
 ### Does Rosebud export a native APK or AAB by itself?

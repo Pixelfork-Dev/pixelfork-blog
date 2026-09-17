@@ -130,6 +130,64 @@ Our [2D art pipeline notes](/posts/2d-game-art-pipeline-pro-tips) cover keeping 
 2. **Export an APK** and check touch precision on a real phone — puzzle games live or die on accurate taps.
 3. **Export an AAB** when you're ready for the Play Console ([APK vs AAB](/posts/apk-vs-aab-for-indie-games), then [closed testing](/posts/google-play-closed-testing-ai-games)).
 
+## Designing ten levels without burning out
+
+One ruleset plus ten hand-tuned levels is a complete small game. A workflow that keeps it manageable:
+
+1. **Levels 1–2 teach.** No failure pressure. The player learns the interaction by doing it.
+2. **Levels 3–5 add one twist each.** A blocker, a tighter move limit, a new piece type. One at a time.
+3. **Levels 6–8 combine** two things the player already knows.
+4. **Levels 9–10 are the exam.** Harder, but using nothing new.
+
+Ask chat for the level system once — *"add a level select with ten levels, each with its own board layout, move limit and target"* — then tune the numbers per level in the values panel where it costs nothing.
+
+Write each level's intent in a sentence before you build it ("teach that blockers need two adjacent matches"). Levels without an intent are where difficulty curves go wrong.
+
+## Hints, undo and the difficulty curve
+
+Puzzle players quit at frustration, not at difficulty. Three cheap mitigations:
+
+- **One undo**, if a misclick can ruin a long solve.
+- **A gentle hint** after inactivity: highlight a valid move rather than solving the level.
+- **A retry that's instant**, keeping the same board so the player can apply what they learned.
+
+And one anti-pattern to avoid: random boards that are occasionally impossible. Ask explicitly for a reshuffle when no valid move exists, and for boards that don't start with automatic matches.
+
+## Progression and meta, in that order
+
+Once the ten levels hold up:
+
+- **Stars or a score per level** give replay value at almost no cost.
+- **A level map** makes progress visible.
+- **Daily puzzles** are a strong retention hook — and a big content commitment, so only add them if you're committed to generating them.
+- **Hints as a purchase** is the classic puzzle monetisation, which means [native in-app purchases](/posts/add-ads-and-iap-after-android-studio-export). Don't build the economy until the puzzles are good.
+
+## A playtest script for puzzles
+
+Puzzle testing is quiet work; watch hands, not faces:
+
+1. Give them level one with no explanation. Time how long until the first correct move.
+2. Ask what they think the goal is after level two.
+3. Note every level where they stop and stare for more than ten seconds — that's either good difficulty or bad readability, and their next sentence tells you which.
+4. Ask which level was most satisfying, and why.
+
+If several testers describe a different rule than the one you implemented, the board is teaching the wrong thing. That's a design fix, not a tutorial fix.
+
+## Saving progress
+
+Puzzle players expect to come back to where they left off, which means persistence — a small feature with a big retention effect. Ask for it explicitly: *"save the highest level completed and the stars earned per level on the device, and restore them when the game starts."*
+
+Two details worth requesting at the same time: don't lose progress if the app is backgrounded mid-level, and keep the save simple enough that a future update doesn't invalidate it.
+
+## Sound in puzzle games
+
+Audio carries more weight here than in action games, because the pace is slow enough to notice it:
+
+- **One satisfying clear sound**, pitched up slightly for combos.
+- **A gentle invalid-move sound** — quiet enough not to scold.
+- **A short win sting** that gives the level a sense of closure.
+- **No looping music by default.** Many puzzle players play muted or alongside other audio; make music opt-in.
+
 ## FAQ
 
 ### Can AI make a match-3 with special gems on day one?

@@ -152,6 +152,43 @@ Build the game on Mobile / Tablet, publish a playable link for feedback, export 
 - [Add ads and IAP after an Android Studio export](/posts/add-ads-and-iap-after-android-studio-export)
 - [Use a playable link and custom domain as your landing page](/posts/playable-link-custom-domain-landing-page)
 
+## What the export actually asks you for
+
+Both Android exports need two pieces of metadata before packaging, and both are worth preparing properly rather than typing something temporary:
+
+- **App name.** What appears under the icon on the home screen. Short names survive Android's truncation; anything past about 12 characters usually gets cut.
+- **App icon.** PNG or JPG, square, minimum 512×512. Design it to read at 48 pixels — one shape, high contrast, no small text. The same asset feeds your Play listing, so treat it as a real design task rather than a placeholder.
+
+Then there's signing. Every Android app is signed, and the signature ties future updates to the original app. If you publish through Play, enrolling in Play App Signing means Google manages the app signing key and you keep an upload key. Whatever route you take, **losing your keys means you can't update your own app** — back them up somewhere you'd still have access to in a year.
+
+## A realistic two-week plan
+
+Most solo creators overestimate the build and underestimate the store paperwork. A plan that fits real evenings:
+
+**Week one — make it good.** Generate the game, iterate the loop in chat, tune feel in the values panel, publish a playable link and get five people to try it. Fix the two things everyone mentions.
+
+**Week two — make it shippable.** Export an APK and test on at least one mid-range phone. Design the icon and take screenshots. Create the app in Play Console, complete the listing and the policy questionnaires, then upload an AAB to a closed testing track and start recruiting testers.
+
+The testing window runs in the background while you keep improving the game. If you're on a new personal developer account, that window is at least 14 days with 12 testers, so starting it early is the single best scheduling decision you can make.
+
+## Export mistakes that cost a week
+
+- **Building the game as a Desktop project.** The platform choice is locked at creation; a Desktop game can't become a Mobile / Tablet one later.
+- **Testing only in the browser preview.** Touch feel, frame rate and first launch behave differently on a phone. The APK exists precisely for this.
+- **Uploading an AAB before device testing.** Every fix after upload costs a new build and a new upload.
+- **Placeholder icons and screenshots.** They're the first thing a reviewer and a player see, and mismatched screenshots are a common rejection reason.
+- **Leaving monetisation to the end and then changing gameplay.** Wire ads or purchases after gameplay is frozen, not during.
+
+## What it costs to get to a store build
+
+Budgeting for an AI-built Android release is mostly about three numbers:
+
+- **Generation credits** while you build. A focused prototype is a handful of credits when numeric tuning happens in the values panel rather than in chat.
+- **A one-time Google Play developer registration fee**, paid once per account, not per game. Check the current amount on Play Console's site.
+- **Your own time on store assets**: an icon, screenshots, a description and the policy questionnaires. Half a day if you prepare them, two frustrating evenings if you don't.
+
+Everything else — publishing a playable link, sharing it, reverting a change you regret — costs nothing.
+
 ## FAQ
 
 ### Can an AI-made game go on Google Play, or only in a browser?

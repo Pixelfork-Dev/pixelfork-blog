@@ -127,6 +127,52 @@ Other paths in this category are legitimate for other goals; the useful question
 - **Art direction.** Generated art is a starting point; a coherent visual identity still takes a human eye. Our [2D art pipeline notes](/posts/2d-game-art-pipeline-pro-tips) apply here too.
 - **Store realities.** Policy, ratings, testing gates and monetisation plumbing don't disappear because an AI wrote the loop.
 
+## How these platforms work, in plain terms
+
+Under the hood, most chat-to-game platforms follow the same three steps:
+
+1. **Your prompt becomes a specification.** The model turns "a runner with three lanes and a jump" into a structured plan: entities, controls, rules, win and lose conditions.
+2. **The specification becomes code.** Usually JavaScript with a rendering library — Three.js for 3D, canvas or WebGL for 2D — plus asset choices and a game loop.
+3. **The code runs in a sandbox** you can play immediately, and each follow-up message edits that code rather than regenerating from scratch.
+
+Two consequences follow. First, **small, specific requests work better than large vague ones**, because they map to smaller edits. Second, **the output is inspectable**: if you can read the code, you can always verify and fix what the model did — which is the most underrated feature in this category.
+
+## What has changed recently
+
+Three shifts made the category practical rather than a novelty:
+
+- **Iteration replaced regeneration.** Early tools rebuilt the whole game on each request; current ones edit the existing project, which is what makes conversation useful.
+- **Packaging arrived.** The gap between "playable link" and "store build" is where most of this year's product work has gone: Android bundles, native project exports, custom domains.
+- **Non-AI controls came back.** Value panels and code tabs exist because pure chat is a bad interface for numbers. The best workflows now mix both.
+
+## Cost models, and why they shape your workflow
+
+Nearly every platform in this category charges per generation, which quietly shapes how people work. When each change costs the same, users stop experimenting — the opposite of what prototyping needs.
+
+Look for a clear split between what's metered (generation) and what's free (playing, reverting, editing code, tuning values, publishing). In Pixelfork that split is explicit, and it's the reason the recommended workflow is "chat for structure, panel for feel" — see [tuning game feel without burning credits](/posts/tune-game-feel-mechanics-editor).
+
+## A short glossary
+
+- **Text-to-game.** Generating a playable game from a natural-language description.
+- **Prototype.** A playable version good enough to judge the idea, not to ship.
+- **Playable link.** A URL that runs the game in a browser with no install.
+- **APK.** An Android package that installs directly on a device.
+- **AAB.** The Android App Bundle format Google Play requires for new apps.
+- **Native project export.** The full engine or Android project, for integrations the web editor can't do.
+- **Credits.** Metered units consumed by AI generation, usually not by playing or publishing.
+- **Mechanics panel.** A UI exposing the game's numeric values for direct editing.
+
+## Questions to ask in a trial
+
+A free tier tells you more than any review if you use it deliberately. In your first session:
+
+- Generate one game, then make **one structural change** and **one numeric change**. Note what each cost.
+- Open the **code view**. Can you read it? Could you fix a small bug yourself?
+- Open the **export menu** before you need it, and see exactly what's on offer.
+- Try the game on **your own phone**, not the desktop preview.
+
+Twenty minutes of that is worth more than a week of comparison articles — including this one.
+
 ## FAQ
 
 ### Is an AI game development platform the same as Unity?

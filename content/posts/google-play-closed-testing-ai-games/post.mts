@@ -124,6 +124,58 @@ Two more worth calling out:
 - **Export the Android Studio project if you need policy-sensitive pieces**, such as an ads consent flow or in-app purchases, before you go to production.
 - **Keep the playable link as your feedback channel.** It costs nothing to publish, works in any browser, and republishing keeps the same URL.
 
+## The store listing checklist
+
+Closed testing runs in parallel with the paperwork, so get the listing done while your testers play:
+
+- **Title and short description.** The title carries the most weight in store search; the short description is the line people actually read.
+- **Full description.** What the game is, how it plays, and who it's for — written for players, not for a keyword tool.
+- **Screenshots.** At least two, ideally four to eight, taken from the real build. Phone screenshots first.
+- **Feature graphic and icon.** The icon must match the one in your build.
+- **Category, tags and contact details.**
+- **Privacy policy URL.** Required whenever you collect data or use SDKs that do. A simple page on your own site is fine.
+- **Content rating questionnaire, target audience and content, data safety, and ads declaration.**
+
+Answer the questionnaires honestly and conservatively. Contradictions between your data-safety answers and what your app actually does are a common rejection reason — and if you later add an ad SDK, your answers change.
+
+## What to ask your testers
+
+Twelve testers who say "nice game" teach you nothing. Send three questions with the opt-in link:
+
+1. **Did it launch and run smoothly on your phone?** (Tell me your phone model.)
+2. **What did you think you were supposed to do in the first 15 seconds?**
+3. **What made you stop playing?**
+
+Question two is the one that finds design problems. If testers describe a different goal than the one you designed, your onboarding is broken — no amount of polish fixes that.
+
+Collect answers anywhere simple: a Discord thread, a three-field form, or direct messages. Also watch the Play Console crash and ANR reports during the window; they'll show device-specific problems no one thinks to report.
+
+## A realistic timeline
+
+- **Day 0:** app created in Play Console, AAB uploaded to a closed track, listing drafted.
+- **Days 1–3:** testers invited and opting in. Expect to invite roughly twice the number you need.
+- **Days 3–14:** feedback, crash fixes, new builds to the same track. Keep the testers opted in — that continuity is what counts.
+- **Day 14+:** apply for production access, answering the questions about your app and your testing process.
+- **After approval:** promote the build to production, then watch the vitals dashboard for the first week.
+
+## After production access
+
+Getting to production isn't the end of the process:
+
+- **Watch Android vitals.** Crash rate and ANR rate are the numbers Play uses to judge your app's quality.
+- **Ship small updates.** A cadence of fixes tells both players and the store that the game is alive.
+- **Keep a testing track open.** Promoting from closed to production for each update is safer than shipping straight to everyone.
+- **Only then think about monetisation.** If ads or purchases are next, the [Android Studio handoff](/posts/add-ads-and-iap-after-android-studio-export) is the path.
+
+## If your app is rejected
+
+A rejection isn't the end of the process; it's a list of things to fix:
+
+- **Read the specific policy cited.** Play's messages link to the exact policy page — start there rather than guessing.
+- **Fix the cause, not the symptom.** Most first rejections are metadata problems: a data-safety answer that doesn't match the SDKs, a missing privacy policy, or screenshots that don't show the actual app.
+- **Reply through the appeal form** if you genuinely believe it's a mistake, with specifics rather than frustration.
+- **Keep the testing track running** while you sort it out, so your testers stay opted in.
+
 ## FAQ
 
 ### Do AI-generated games skip Google Play testing requirements?

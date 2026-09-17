@@ -131,6 +131,62 @@ Advanced users can also edit the generated JavaScript in the Code tab directly �
 
 The Mechanics Editor is documented as a Pro feature. Free (5 credits a month) and Lite (50 credits, $15) can still generate and iterate through chat, but the no-credit tuning loop described here is part of Pro (100 + 20 credits, $25). Check [the credits documentation](https://docs.pixelfork.ai/docs/understanding-credits) for the current plan details before you decide.
 
+## A worked tuning session
+
+Numbers in isolation mean nothing, so here's the shape of a real session on a 2D platformer. Change one value, play for thirty seconds, then decide.
+
+1. **Movement first.** Raise run speed until the character feels responsive but controllable. Too slow reads as "clunky"; too fast reads as "slippery".
+2. **Then gravity.** Raise it until falls feel weighty. Most generated platformers start too floaty.
+3. **Then jump height**, to compensate for the heavier gravity, until a standard gap clears with a small margin.
+4. **Then level dimensions.** If jumps now feel cramped, widen platforms slightly rather than re-tuning the jump.
+5. **Then enemies.** Speed and spawn rate last, because they're balanced against the movement you just fixed.
+
+The order matters: every value downstream depends on movement. Tuning enemies before movement means doing it twice.
+
+## Recipes by genre
+
+**Endless runner.** Run speed, speed ramp, jump height, gravity, obstacle spawn interval. Ramp gently — most runners fail because speed rises faster than the player learns.
+
+**Hypercasual one-tap.** Input responsiveness, object speed, spawn interval, combo window. Sessions should end in 15–45 seconds at the start and stretch as skill grows.
+
+**Arcade shooter.** Player speed, fire rate, projectile speed, enemy size, spawn rate, arena size. Fire rate and projectile speed together control how powerful the player feels; arena size controls how much room to breathe.
+
+**Puzzle.** Move limits, target scores, board size, cascade and animation speed. Animation speed is underrated: 150–250 ms keeps a fast player from waiting.
+
+## When two values fight
+
+Some pairs can't be tuned separately:
+
+- **Jump height and gravity** define the arc. Change one, always re-check the other.
+- **Speed and spawn rate** define density. Raising both at once always overshoots.
+- **Fire rate and enemy health** define time-to-kill. Fix one, tune the other.
+- **Score multiplier and session length** define pacing. A generous multiplier makes short runs feel rewarding — and long runs feel meaningless.
+
+When a game feels wrong and single changes don't help, you're probably tuning one half of a pair.
+
+## Working with someone else
+
+If a second person is playtesting for you, give them a script rather than asking "is it fun?":
+
+- Play three runs without commentary.
+- After each, answer: too slow, about right, or too fast?
+- Tell me the moment you felt unfairly killed.
+- Tell me the moment you felt clever.
+
+Then make one change at a time between rounds. A tuning session where you change four values at once teaches you nothing, no matter how much better the result feels.
+
+## Keeping a tuning log
+
+Feel work is easy to lose track of, and version history only tells you *what* changed, not *why*. Keep a three-column note while you tune:
+
+| Value | Before → after | Why |
+| --- | --- | --- |
+| Gravity | 9 → 12 | Jump felt floaty |
+| Jump height | 4 → 4.6 | Compensate for heavier gravity |
+| Spawn interval | 1.2 → 1.5 | Two testers died before reacting |
+
+Five minutes of notes saves you from the classic loop of re-tuning the same value in circles — and it's the fastest way to hand the game to someone else for a second opinion.
+
 ## FAQ
 
 ### Does the Mechanics Editor use credits?

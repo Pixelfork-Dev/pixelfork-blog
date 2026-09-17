@@ -120,6 +120,67 @@ A "remove ads" purchase is the friendliest first product: it's simple to impleme
 
 Either way, keep the AI editor as the place gameplay changes happen, and the Android project as the place production plumbing happens. Mixing the two is where projects get lost.
 
+## Ad placement design rules
+
+Integration is the easy half. Placement is what decides whether players stay:
+
+- **Never in the first session minute.** Let people find out if the game is fun before you interrupt them.
+- **Never mid-action.** Full-screen ads during a run feel like punishment and hurt retention more than the impression is worth.
+- **At natural breaks.** Level end, run end, menu return — moments where the player has already stopped.
+- **Cap frequency.** A minimum gap between interstitials (measured in runs or minutes) is the single best lever you have.
+- **Make rewarded ads genuinely optional and genuinely rewarding.** A continue, a double-score, a skin. If the reward feels compulsory, it's not rewarded — it's a paywall.
+- **Respect the back button and the pause state.** Returning from an ad should never lose progress.
+
+## A realistic timeline
+
+For a solo creator wiring monetisation into an exported project for the first time:
+
+- **Half a day** to export, open the project and confirm a debug build runs on a device.
+- **Half a day to a day** for the ad SDK: account, ad units, dependency, initialisation, one rewarded and one interstitial placement, test ads verified.
+- **A day** for in-app purchases: products in Play Console, billing integration, purchase and restore flows, licence-tester verification.
+- **Half a day** for consent and data-safety answers.
+- **A day** for testing on real devices and fixing what breaks.
+
+Call it three to four focused days for someone comfortable in Android Studio, or a small freelance job with a clear brief if you're not. Budget more if your gameplay is still changing — which is why the first rule is to freeze it.
+
+## Privacy, consent and data safety
+
+Ad SDKs collect data, which means three obligations:
+
+1. **A consent flow** where regulations require it, shown before ads are requested.
+2. **Accurate data-safety answers** in Play Console that match what your SDKs actually collect. Update them when you add an SDK.
+3. **A privacy policy** that mentions your ad partner, hosted at a stable URL.
+
+Getting this wrong is one of the more common reasons an update gets held up, and it's entirely avoidable.
+
+## Integration bugs that waste a day
+
+- **Testing with live ads.** Use the SDK's test ad units during development. Clicking your own live ads risks your account.
+- **Loading an ad at the moment you want to show it.** Preload while the player is busy, then show instantly.
+- **Blocking the first frame.** SDK initialisation on the main thread at launch makes the game feel slow before it starts.
+- **Forgetting the restore path.** Non-consumable purchases must survive a reinstall, or you'll get refund requests and one-star reviews.
+- **Granting the item on the button press.** Always wait for Play's confirmation callback.
+- **Changing gameplay mid-integration.** Re-exporting after the SDK work has started means merging two versions by hand.
+
+## Deciding what to sell
+
+Before any code, decide the model. Three that work for small games:
+
+- **Ads only.** Rewarded for bonuses, capped interstitials at run end. Best for short-session arcade and hypercasual games.
+- **Ads plus "remove ads".** The friendliest paid product there is: one price, permanent, restorable.
+- **Cosmetics.** Skins and themes that don't change balance. Slower to earn, kinder to the experience.
+
+What to avoid in a first game: multi-currency economies, loot boxes and anything that makes a fair game unfair. They need tuning data you won't have until people play, and they attract policy scrutiny you don't need yet. The design side is covered in our [monetisation strategies guide](/posts/monetization-strategies-for-indie-mobile-games).
+
+## Keeping gameplay and native code in sync
+
+Once the Android project has your SDK work in it, the exported project — not the web editor — is your source of truth for releases. Two habits keep that manageable:
+
+- **Put the project in version control** the moment it opens and builds. Commit before each SDK change so you can bisect a break.
+- **Batch gameplay changes.** If you must go back to the editor for a gameplay fix, do several at once, re-export, and merge deliberately rather than re-exporting weekly.
+
+If you expect frequent gameplay iteration, delay the native work until the design is genuinely settled — the merge cost is what makes monetisation feel painful, not the SDKs themselves.
+
 ## FAQ
 
 ### Can I add AdMob without leaving the web editor?

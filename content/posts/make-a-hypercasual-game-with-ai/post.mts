@@ -128,6 +128,71 @@ Hypercasual games are usually ad-supported, sometimes with a "remove ads" purcha
 
 Ads and in-app purchases are native integrations: export the full Android Studio project and add them there — see [adding ads and IAP after an Android Studio export](/posts/add-ads-and-iap-after-android-studio-export). For the design side of ad placement and formats, our [monetisation strategies guide](/posts/monetization-strategies-for-indie-mobile-games) and [ad mediation explainer](/posts/ad-mediation-explained) go deeper.
 
+## Finding an idea worth prototyping
+
+Hypercasual ideas come from verbs, not themes. A method that works:
+
+1. **List ten physical verbs.** Flick, stack, balance, slice, dodge, merge, aim, stretch, fill, sort.
+2. **Pair each with a constraint.** Stack *while the tower sways*. Slice *a moving target*. Fill *a shape with limited paint*.
+3. **Say the result out loud in one sentence.** If it needs two, drop it.
+4. **Prototype three of them**, not one. Most ideas feel worse than they sound, and you learn that in twenty minutes each.
+
+Because generation is cheap and fast, three rough prototypes cost less than one over-polished idea you're emotionally attached to.
+
+## Retention hooks that don't need live-ops
+
+Hypercasual retention is thin by design, but a few cheap hooks help:
+
+- **A best score, always visible.** The simplest reason to play again.
+- **A near-miss counter or combo.** Rewards confident play and creates stories.
+- **One unlock at a modest milestone.** A colour, a skin, a new background — cosmetic only.
+- **A fast restart.** The most important retention feature in the genre: one tap, no menu, no ad.
+
+Anything more — daily rewards, energy systems, shops — is live-ops, and live-ops needs analytics and [monetisation plumbing](/posts/add-ads-and-iap-after-android-studio-export) before it earns its complexity.
+
+## Designing sessions that ads can live in
+
+If ads will eventually pay for the game, session design decides how much they earn without ruining it:
+
+- **Runs of 20–60 seconds** create natural ad breaks between attempts.
+- **A meaningful continue.** "Watch to continue" only works if losing the run actually hurts — which means the score has to climb steeply.
+- **Cluster rewards.** A doubled score at the end of a good run beats interrupting a bad one.
+- **Cap interruptions per minute.** A player who sees two full-screen ads in ninety seconds is gone.
+
+Design the pacing now, wire the ads later. That order is much cheaper than the reverse.
+
+## Know when to stop
+
+Most hypercasual prototypes should be abandoned, and that's the genre working. Write your kill criteria before you start:
+
+- Nobody plays a third run voluntarily.
+- Testers can't describe the goal after ten seconds.
+- Two rounds of tuning haven't changed how it feels.
+- You can't explain the game in one sentence any more.
+
+If you hit two of those, start the next verb. The cost of a wrong idea is now an afternoon, which is exactly why this workflow is worth using.
+
+## Naming and first impressions
+
+In a store full of similar games, the name and icon do the work your trailer can't:
+
+- **Name it for the verb**, not the theme: what the player does is what they're searching for.
+- **Keep it short** — long names get truncated on the home screen and in store listings.
+- **Icon with one readable shape**, high contrast, no text. Test it at 48 pixels before you commit.
+- **First screenshot shows the moment**, not the menu.
+
+None of this rescues a weak loop, but a good loop with a forgettable icon is the most common quiet failure in the genre.
+
+## Testing on the right phone
+
+Hypercasual audiences skew toward older and cheaper devices, so test there:
+
+- **Borrow a mid-range or three-year-old phone** and treat it as your reference device.
+- **Play one-handed, standing up**, the way people play on a bus.
+- **Check in sunlight** — pastel palettes that look elegant indoors disappear outdoors.
+
+If the game holds up in those conditions, it'll feel great on a flagship.
+
 ## FAQ
 
 ### What's the difference between hypercasual and an endless runner?

@@ -1,7 +1,7 @@
 /**
  * Sends content to the live blog through the Publishing API (no database, GitHub or storage credentials).
  *
- *   npm run post:send -- <slug>                          create a draft from content/posts/<slug>
+ *   npm run post:send -- <slug> [--update]               create a draft (or replace the draft's content)
  *   npm run post:send -- --cover <slug> <image> "<alt>"  replace the cover of an existing post
  *
  * The API token is read from the macOS Keychain (account "pixelfork-blog", service "PIXELFORK_BLOG_TOKEN")
@@ -57,20 +57,25 @@ if (args[0] === "--cover") {
   await call(`/api/publish/posts/${slug}/cover`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ src: media.url, alt }) });
   console.log(`✓ cover replaced: ${BASE}/posts/${slug}`);
 } else {
-  const [slug] = args;
+  const [slug] = args.filter((a) => !a.startsWith("--"));
   if (!slug) {
     console.error("Usage: npm run post:send -- <slug>");
     process.exit(1);
   }
   const pkg = await loadPackage(slug);
+  const update = args.includes("--update");
   const existing = await call(`/api/publish/posts/${slug}`, { method: "GET" });
-  if (existing.exists) {
-    console.error(`✗ "${slug}" already exists on the blog (${existing.status}). Nothing was uploaded.`);
+  if (existing.exists && !update) {
+    console.error(`✗ "${slug}" already exists on the blog (${existing.status}). Nothing was uploaded. Pass --update to replace the draft.`);
+    process.exit(1);
+  }
+  if (update && !existing.exists) {
+    console.error(`✗ "${slug}" doesn't exist on the blog yet; run without --update to create it.`);
     process.exit(1);
   }
   const { cover, html, placeholders } = await renderPackage(pkg, path.join(POSTS_DIR, slug), upload);
-  const result = await call("/api/publish/posts", {
-    method: "POST",
+  const result = await call(update ? `/api/publish/posts/${slug}` : "/api/publish/posts", {
+    method: update ? "PUT" : "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       slug,
@@ -85,5 +90,5 @@ if (args[0] === "--cover") {
       html,
     }),
   });
-  console.log(`✓ draft created: ${BASE}${result.editUrl}${placeholders ? ` · ⚠ ${placeholders} screenshot placeholders` : ""}${cover ? "" : " · ⚠ no cover"}`);
+  console.log(`✓ draft ${update ? "updated" : "created"}: ${BASE}${result.editUrl}${placeholders ? ` · ⚠ ${placeholders} screenshot placeholders` : ""}${cover ? "" : " · ⚠ no cover"}`);
 }

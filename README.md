@@ -73,13 +73,14 @@ rejected instead of overwriting the first.
 
 *Admin → API tokens* (admins) creates tokens for automation. Only a SHA-256 hash is stored and the token is shown once.
 Scopes: `drafts:create` (upload images, create **draft** posts) and `covers:update` (replace a post's cover). Tokens can't publish,
-edit text, delete or read users; limits are 5 posts and 60 images per token per 24 hours; revoking takes effect immediately.
+edit text, delete or read users; limits are 15 posts and 250 images per token per 24 hours; revoking takes effect immediately.
 
 | Endpoint | Scope | |
 | --- | --- | --- |
 | `POST /blog/api/publish/media` | either | multipart `file` (+ `alt`) → `{ url, width, height }` |
 | `GET /blog/api/publish/posts/<slug>` | either | `{ exists, status }` |
 | `POST /blog/api/publish/posts` | `drafts:create` | JSON `{ slug, title, excerpt, seoTitle, seoDescription, focusKeyword, tags, author?, cover?, html }` → draft |
+| `PUT /blog/api/publish/posts/<slug>` | `drafts:create` | Replace the content of a draft this token created (never a live post) |
 | `PUT /blog/api/publish/posts/<slug>/cover` | `covers:update` | JSON `{ src, alt }` (an image this token uploaded) |
 
 Send `Authorization: Bearer <token>`. Images referenced in `html` must have been uploaded through the API first.

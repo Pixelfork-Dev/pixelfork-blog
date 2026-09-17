@@ -121,6 +121,54 @@ The web playable is your open feedback channel; the Play testing tracks are the 
 
 When you're live, the funnel is simply: post → play → install.
 
+## A campaign checklist
+
+Once the playable is on a domain you own, the funnel is only as good as the links pointing into it:
+
+- **UTM tags on every outbound link**, so you can tell which channel sent players who actually installed: \`?utm_source=discord&utm_medium=post&utm_campaign=launch\`.
+- **A QR code** for anything physical or on-screen — meetups, a stream overlay, a conference badge. Phone cameras handle these natively.
+- **A pinned post** on each community you're active in, updated whenever the game changes.
+- **Open Graph preview.** Check what your link looks like when pasted into Discord, X and WhatsApp — a broken preview halves the clicks.
+- **One link, everywhere.** Republishing keeps the same URL, so the link you posted last month still shows the newest build.
+
+## What to write on the page
+
+If you build a small page around the game rather than serving the game full-screen, keep it to four blocks:
+
+1. **The game itself**, playable in one tap, above the fold.
+2. **One sentence** that says what it is: *"A one-thumb runner about dodging traffic at rush hour."*
+3. **A store button** if the Android build is live, or an email field if it isn't yet.
+4. **A feedback link** — Discord invite or a three-question form.
+
+Resist adding a features list, a roadmap or a press kit until someone asks for one. The playable is the pitch.
+
+## Measuring what actually works
+
+You don't need an analytics stack to learn something useful:
+
+- **Play Console acquisition reports** show which sources led to installs, which is exactly what the UTM tags feed.
+- **Link click counts** from the platform you posted on tell you the top of the funnel.
+- **The ratio between them** is the number that matters: lots of clicks and few installs usually means the first 15 seconds of the game aren't landing, not that the button is in the wrong place.
+- **Watch someone play from the link**, in person or on a call, at least once. It beats every dashboard.
+
+## Mistakes worth avoiding
+
+- **Gating the demo.** An email wall before play removes the entire advantage of a web playable.
+- **A desktop-only layout.** Most links are opened on a phone. Test yours there first.
+- **A stale build.** If the demo is two months behind the store version, you're advertising an old game.
+- **Sending iPhone users to a Play link.** Say which platforms the installable build supports.
+- **Treating the domain as SEO.** A custom domain is for branding and trust; it doesn't rank your store listing. Ranking comes from your listing text, store assets and reviews — plus content like this blog.
+
+## When not to use a web demo
+
+A playable link isn't always the right call:
+
+- **If the game leans on native features** — notifications, purchases, leaderboards — a web demo shows a partial product.
+- **If performance only holds on a real build**, a slow browser version sells the game short.
+- **If the loop isn't fun yet.** A demo is a permanent first impression for anyone who tries it; send it when it's ready, not when it's merely working.
+
+In those cases, use a short video and a Play testing invite instead, and publish the playable once it represents the game you want people to judge.
+
 ## FAQ
 
 ### Can players play without installing anything?

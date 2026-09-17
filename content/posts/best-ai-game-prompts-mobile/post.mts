@@ -231,6 +231,47 @@ One more: **naming a famous game as the spec.** "Like Subway Surfers but with ca
 
 That's the shape of a prototype that costs a handful of credits instead of a whole month's plan.
 
+## Follow-up prompts that fix common problems
+
+Most first generations fail in predictable ways. These follow-ups fix them without restarting:
+
+**The game reads as desktop.** *"Replace all keyboard and mouse controls with touch: tap to jump and swipe left or right to move. Remove any on-screen instructions that mention keys."*
+
+**Nothing tells the player they did well.** *"Add immediate feedback to every scoring action: a short particle burst, a small scale pop on the score number, and a sound."*
+
+**There's no failure loop.** *"Add a game-over state that stops the game, shows the score and best score, and offers a single restart button that returns straight into play."*
+
+**It's too hard immediately.** *"Start the game slower, and increase difficulty gradually: raise the speed by a small step every 15 seconds instead of continuously."*
+
+**The UI is unreadable on a phone.** Attach a screenshot and write: *"On a phone this text is too small and overlaps the top edge. Increase the font size, keep the UI inside a safe margin, and move the score to the top centre."*
+
+**The camera is wrong in 3D.** *"Move the camera behind and slightly above the player, looking forward, and keep the horizon in the upper third of the screen."*
+
+## Prompting for art and assets
+
+Art direction is where vague prompts hurt most. Three techniques:
+
+1. **Name a concrete style, not a mood.** "Flat vector with thick outlines and a four-colour palette" beats "cool and modern".
+2. **Attach a reference image.** The Add Image button takes a screenshot or a mood board; the AI reads it for style, not just content.
+3. **Use your own assets.** Upload them in the Assets tab and mention them with @ so they're used by name — the cleanest way to get a specific character or tile set into the game.
+
+Keep the palette small and the contrast high. On a phone, readability is a gameplay feature, not a visual preference. Our [2D art pipeline notes](/posts/2d-game-art-pipeline-pro-tips) cover keeping that consistent as the game grows.
+
+## A worked session
+
+Here's how a focused build actually looks, message by message:
+
+1. **First prompt** (2 credits): the runner starter from above.
+2. *"Add coins that spawn between obstacles and a coin counter in the top right."* (1)
+3. *"Add a game-over screen with score, best score and a restart button."* (1)
+4. *"Obstacles should be visible about one second before the player reaches them at current speed."* (1)
+5. **Mechanics panel** (free): run speed 8 → 6.5, gravity up, jump height up slightly, spawn interval up.
+6. **Playtest, revert one change** via version history (free).
+7. *"Add a magnet power-up that appears roughly every 30 seconds and lasts 5 seconds."* (1)
+8. **Panel again** (free): tune the magnet radius and the new spawn value.
+
+Six credits, one afternoon, and a game that's ready for a playable link. The pattern generalises: structure in chat, numbers in the panel, playtest between every step.
+
 ## FAQ
 
 ### Should I paste a long ChatGPT-generated prompt into an AI game maker?
