@@ -39,7 +39,9 @@ export const PUT = apiRoute(async (request: Request, { params }: RouteContext<"/
   const post = await db.query.posts.findFirst({ where: eq(schema.posts.slug, slug) });
   if (!post) throw new ApiError(404, `No post with the slug "${slug}".`);
   if (post.status !== "draft") throw new ApiError(409, "This post is live. Only drafts can be updated through the API.");
-  if (post.createdByTokenId !== token.id) throw new ApiError(403, "This draft was created by someone else.");
+  // Only drafts this token created, or ones imported by the deploy's content sync (no human author).
+  const machineImported = post.createdByTokenId === null && post.createdById === null;
+  if (post.createdByTokenId !== token.id && !machineImported) throw new ApiError(403, "This draft was created by a person; edit it in the admin.");
 
   const content = data.html ? sanitizePostHtml(data.html) : undefined;
   if (content) {
