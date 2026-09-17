@@ -13,6 +13,25 @@ Status: `todo` → `draft` (sent to the blog, waiting for review) → `published
 | game-design-document-template | draft | ready to publish |
 | (11 starter posts) | published | new Nano Banana 2 covers applied 2026-09-13 |
 
+## Product briefs (ALL-BLOG-BRIEFS.md) — drafted 2026-09-17, waiting for review
+| Slug | Words | Notes |
+|---|---|---|
+| ai-game-maker-export-apk-aab-google-play | 2057 | Export pillar; featured |
+| pixelfork-vs-rosebud-ai-game-makers | 1849 | Competitor comparison; re-verify competitor claims before publishing |
+| google-play-closed-testing-ai-games | 1663 | Cites Play Help 12 testers / 14 days — re-check before publishing |
+| best-ai-game-prompts-mobile | 1856 | Prompt library; featured |
+| apk-vs-aab-for-indie-games | 1398 | Format explainer |
+| add-ads-and-iap-after-android-studio-export | 1702 | Monetisation handoff |
+| tune-game-feel-mechanics-editor | 1449 | Mechanics Editor how-to |
+| make-an-endless-runner-with-ai | 1643 | Genre guide |
+| make-a-hypercasual-game-with-ai | 1555 | Genre guide |
+| make-a-puzzle-game-with-ai | 1515 | Genre guide |
+| what-is-an-ai-game-development-platform | 1628 | Category definition |
+| playable-link-custom-domain-landing-page | 1485 | Web funnel |
+
+All 12 use code-built infographics, first-party product screenshots from docs.pixelfork.ai, and AI covers
+(6-style library). Facts checked against docs.pixelfork.ai and Play Console Help on 2026-09-17.
+
 ## Queue — Priority 1 (covers already in `content/posts/<slug>/cover.webp`)
 | # | Slug | Target keyword | Status |
 |---|---|---|---|
