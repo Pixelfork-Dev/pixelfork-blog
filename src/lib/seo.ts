@@ -234,6 +234,43 @@ export function postJsonLd(post: Post) {
   };
 }
 
+/**
+ * FAQPage schema built from an article's own FAQ section: the H2 whose text starts with "FAQ" or
+ * "Frequently asked", and the H3 questions under it. Helps search engines and answer engines quote answers.
+ */
+export function faqJsonLd(html: string, url: string) {
+  const faq = html.match(/<h2[^>]*>\s*(?:FAQ|Frequently asked)[^<]*<\/h2>([\s\S]*?)(?=<h2|$)/i);
+  if (!faq) return null;
+
+  const strip = (value: string) =>
+    value
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&#x27;|&#39;/g, "’")
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const entries = [...faq[1].matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>([\s\S]*?)(?=<h3|$)/gi)]
+    .map(([, question, answer]) => ({ question: strip(question), answer: strip(answer) }))
+    .filter((e) => e.question && e.answer.length > 20);
+  if (entries.length < 2) return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${url}#faq`,
+    mainEntity: entries.map((e) => ({
+      "@type": "Question",
+      name: e.question,
+      acceptedAnswer: { "@type": "Answer", text: e.answer },
+    })),
+  };
+}
+
 export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
   return {
     "@context": "https://schema.org",

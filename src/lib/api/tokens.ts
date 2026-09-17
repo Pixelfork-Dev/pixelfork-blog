@@ -18,7 +18,7 @@ export const API_SCOPES = {
 export type ApiScope = keyof typeof API_SCOPES;
 
 /** Daily limits per token, so a leaked or runaway token can't flood the blog. */
-export const DAILY_LIMITS = { media: 60, posts: 5 };
+export const DAILY_LIMITS = { media: 250, posts: 15 };
 
 const PREFIX = "pfb_";
 const hash = (token: string) => createHash("sha256").update(token).digest("hex");
