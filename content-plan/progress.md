@@ -6,6 +6,7 @@ Status: `todo` → `draft` (sent to the blog, waiting for review) → `published
 ## Done / in review
 | Slug | Status | Notes |
 |---|---|---|
+| pixel-art-for-games | draft | 1 screenshot placeholder (pixel art editor workspace) |
 | how-to-monetize-hypercasual-mobile-games | draft | 6 screenshot placeholders (ad network screens) |
 | how-to-make-a-roblox-game | draft | 3 Roblox Studio screenshot placeholders |
 | what-is-an-npc | draft | ready to publish |
@@ -47,7 +48,7 @@ The two short ones are ~700 words and worth expanding.
 ## Queue — Priority 1 (covers already in `content/posts/<slug>/cover.webp`)
 | # | Slug | Target keyword | Status |
 |---|---|---|---|
-| 5 | pixel-art-for-games | pixel art for games | todo |
+| 5 | pixel-art-for-games | pixel art for games | draft 2026-09-18 |
 | 6 | godot-vs-unity | godot vs unity | todo |
 | 7 | unity-vs-unreal | unity vs unreal | todo |
 | 8 | how-to-make-a-mobile-game | how to make a mobile game | todo |
