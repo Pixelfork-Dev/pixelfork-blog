@@ -8,6 +8,7 @@ Status: `todo` → `draft` (sent to the blog, waiting for review) → `published
 |---|---|---|
 | pixel-art-for-games | draft | 1 screenshot placeholder (pixel art editor workspace) |
 | how-to-monetize-hypercasual-mobile-games | draft | 6 screenshot placeholders (ad network screens) |
+| godot-vs-unity | draft | Pixelfork added as a third option; no placeholders |
 | how-to-make-a-roblox-game | draft | 3 Roblox Studio screenshot placeholders |
 | what-is-an-npc | draft | ready to publish |
 | how-to-make-a-video-game | draft | ready to publish |
@@ -49,7 +50,7 @@ The two short ones are ~700 words and worth expanding.
 | # | Slug | Target keyword | Status |
 |---|---|---|---|
 | 5 | pixel-art-for-games | pixel art for games | draft 2026-09-18 |
-| 6 | godot-vs-unity | godot vs unity | todo |
+| 6 | godot-vs-unity | godot vs unity | draft 2026-09-19 |
 | 7 | unity-vs-unreal | unity vs unreal | todo |
 | 8 | how-to-make-a-mobile-game | how to make a mobile game | todo |
 | 9 | best-game-engine-for-beginners | best game engine for beginners | todo |

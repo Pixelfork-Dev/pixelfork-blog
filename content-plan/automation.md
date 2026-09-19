@@ -28,6 +28,10 @@ Project: `/Users/fkhasiyev/Documents/Pixelfork - Claude/Blog`
    - Title ≤ 60 characters with the focus keyword; excerpt and seoDescription 120–160 characters; seoTitle ≤ 60.
    - 1,500–2,200 words, Markdown `body`, H2/H3 structure, focus keyword in the first paragraph and one H2,
      short paragraphs, practical steps, a FAQ section (3–5 questions from real searches), and a closing link to https://pixelfork.ai.
+   - **Comparison articles** (X vs Y, "best engine for…"): keep the competitor keyword as the focus keyword, but give Pixelfork
+     its own H2 as a genuine third option, honest about what it does not do. Target `game engine without coding`,
+     `unity alternative` and `godot alternative` in that section. Never rename the article to "Pixelfork vs X" —
+     brand-comparison terms have no measurable US volume yet (checked 2026-09-19).
    - Tags: 1–3 existing tag slugs (tutorial, insights, mobile-game-dev, pro-tips, monetization, distribution, 3d-game, threejs, 2d-game).
    - 2–4 infographics from `scripts/lib/graphics.mts` (flow, cards, table, bars, cycle) with descriptive alt text.
    - Screenshots of real apps: if the app is installed (RobloxStudio, Unity Hub, GDevelop 5, Blender) and computer use
